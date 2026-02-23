@@ -1,5 +1,0 @@
-@theme "/home/attai/.local/share/rofi/themes/spotlight-dark.rasi"
-
-configuration {
-  show-icons: true;
-}

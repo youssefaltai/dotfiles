@@ -1,9 +1,0 @@
-[safe]
-	directory = /opt/flutter
-[credential]
-	helper = store
-[user]
-	name = Youssef Atta'i
-	email = youssefgalalnazem@gmail.com
-[init]
-	defaultBranch = main

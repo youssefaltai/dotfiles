@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-paplay "$HOME/.local/share/sounds/normal-notification-sound.mp3"

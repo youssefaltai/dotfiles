@@ -1,4 +1,0 @@
-#!/bin/bash
-
-icon="$HOME/Pictures/svg/window.svg"
-dunstify -r 5555 "Workspace $(bspc query -D -d focused --names)" -t 600 -i $icon -u low

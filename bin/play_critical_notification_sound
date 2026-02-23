@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-paplay "$HOME/.local/share/sounds/critical-notification-sound.mp3"
