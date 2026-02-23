@@ -10,6 +10,7 @@ return {
         python = { 'pylint' },
         typescript = { 'eslint' },
         javascript = { 'eslint' },
+        dart = { 'dart_analyze' },
       }
 
       -- To allow other plugins to add linters to require('lint').linters_by_ft,
@@ -43,6 +44,14 @@ return {
       -- lint.linters_by_ft['ruby'] = nil
       -- lint.linters_by_ft['terraform'] = nil
       -- lint.linters_by_ft['text'] = nil
+
+      -- FVM-aware dart_analyze linter configuration
+      lint.linters.dart_analyze = vim.tbl_extend('force', lint.linters.dart_analyze or {}, {
+        cmd = function()
+          local fvm_dart = vim.fn.getcwd() .. '/.fvm/flutter_sdk/bin/dart'
+          return vim.fn.filereadable(fvm_dart) == 1 and fvm_dart or 'dart'
+        end,
+      })
 
       -- Create autocommand which carries out the actual linting
       -- on the specified events.
