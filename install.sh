@@ -4,7 +4,6 @@ set -e
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "Installing dotfiles from $DOTFILES_DIR..."
-
 # Function to create symlink with backup
 symlink_config() {
   local source="$1"
@@ -28,6 +27,7 @@ symlink_config "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
 symlink_config "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
 symlink_config "$DOTFILES_DIR/.zshenv" "$HOME/.zshenv"
 symlink_config "$DOTFILES_DIR/.config/nvim" "$HOME/.config/nvim"
+symlink_config "$DOTFILES_DIR/.config/ghostty" "$HOME/.config/ghostty"
 
 # Install TPM if not present
 if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
