@@ -27,7 +27,14 @@ symlink_config "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
 symlink_config "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
 symlink_config "$DOTFILES_DIR/.zshenv" "$HOME/.zshenv"
 symlink_config "$DOTFILES_DIR/.config/nvim" "$HOME/.config/nvim"
-symlink_config "$DOTFILES_DIR/.config/ghostty" "$HOME/.config/ghostty"
+
+# Ghostty: macOS only
+if [ "$(uname)" = "Darwin" ]; then
+  symlink_config "$DOTFILES_DIR/.config/ghostty" "$HOME/.config/ghostty"
+  echo "  (Ghostty symlink configured for macOS)"
+else
+  echo "  Skipping Ghostty symlink (not on macOS)"
+fi
 
 # Install TPM if not present
 if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then

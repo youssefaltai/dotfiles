@@ -115,3 +115,8 @@ export NVM_DIR="$HOME/.nvm"
 
 
 export XDG_CONFIG_HOME="$HOME/.config"
+
+# Dotfiles convenience aliases
+alias dotfiles="cd ~/dotfiles"
+alias dotfiles-sync="cd ~/dotfiles && git pull"
+alias dotfiles-push="cd ~/dotfiles && git add -u && git commit -m 'sync dotfiles' && git push"
