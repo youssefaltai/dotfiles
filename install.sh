@@ -25,6 +25,8 @@ symlink_config() {
 # Create symlinks
 echo "Setting up symlinks..."
 symlink_config "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
+symlink_config "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
+symlink_config "$DOTFILES_DIR/.zshenv" "$HOME/.zshenv"
 symlink_config "$DOTFILES_DIR/.config/nvim" "$HOME/.config/nvim"
 
 # Install TPM if not present

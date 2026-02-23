@@ -1,9 +1,11 @@
 # Dotfiles
 
-Personal dotfiles for tmux and neovim configuration.
+Personal dotfiles for zsh, tmux, and neovim configuration.
 
 ## Contents
 
+- **`.zshrc`** — Zsh shell configuration (Zim framework, autosuggestions, syntax highlighting)
+- **`.zshenv`** — Zsh environment setup
 - **`.tmux.conf`** — Tmux configuration with TPM (Tmux Plugin Manager)
 - **`.config/nvim/`** — Neovim configuration (kickstart.nvim-based with lazy.nvim)
 
@@ -41,6 +43,12 @@ Personal dotfiles for tmux and neovim configuration.
    - Mason will auto-install LSP servers on first open
 
 ## Configuration Files
+
+### Zsh (`~/.zshrc` and `~/.zshenv`)
+
+- **Framework**: [Zim](https://github.com/zimfw/zimfw) for fast zsh initialization
+- **Plugins**: zsh-autosuggestions, zsh-syntax-highlighting
+- **Features**: NVM integration, custom PATH configuration
 
 ### Tmux (`~/.tmux.conf`)
 
