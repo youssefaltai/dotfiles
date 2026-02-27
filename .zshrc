@@ -106,8 +106,10 @@ source ${ZIM_HOME}/init.zsh
 # }}} End configuration added by Zim Framework install
 export PATH="$HOME/.local/bin:$PATH"
 
-# Add NeoVim
-export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
+# Add NeoVim (Linux only)
+if [[ "$(uname)" == "Linux" && -d "/opt/nvim-linux-x86_64/bin" ]]; then
+  export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
+fi
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm

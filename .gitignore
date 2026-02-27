@@ -2,7 +2,7 @@
 .*
 # Whitelist specific dotfiles
 !.gitignore
-!.gitconfig
+!.zimrc
 !.tmux.conf
 !.zshrc
 !.zshenv
