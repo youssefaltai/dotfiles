@@ -2,9 +2,11 @@
 .*
 # Whitelist specific dotfiles
 !.gitignore
-!.zimrc
 !.tmux.conf
 !.zshrc
 !.zshenv
 !.config/
 !.local/
+
+# Ignore cloned zsh plugins (installed by install.sh)
+zsh/plugins/

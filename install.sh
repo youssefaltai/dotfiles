@@ -4,6 +4,7 @@ set -e
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "Installing dotfiles from $DOTFILES_DIR..."
+
 # Function to create symlink with backup
 symlink_config() {
   local source="$1"
@@ -21,12 +22,30 @@ symlink_config() {
   ln -s "$source" "$target"
 }
 
+# Function to clone a plugin if not already present
+clone_plugin() {
+  local repo="$1"
+  local dest="$2"
+
+  if [ ! -d "$dest" ]; then
+    echo "  Cloning $repo..."
+    git clone --depth 1 "https://github.com/${repo}.git" "$dest"
+  else
+    echo "  $repo already installed"
+  fi
+}
+
 # Create symlinks
+echo ""
 echo "Setting up symlinks..."
 symlink_config "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
 symlink_config "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
 symlink_config "$DOTFILES_DIR/.zshenv" "$HOME/.zshenv"
-symlink_config "$DOTFILES_DIR/.zimrc" "$HOME/.zimrc"
+
+mkdir -p "$HOME/.zsh"
+symlink_config "$DOTFILES_DIR/zsh/functions" "$HOME/.zsh/functions"
+symlink_config "$DOTFILES_DIR/zsh/prompt.zsh" "$HOME/.zsh/prompt.zsh"
+
 symlink_config "$DOTFILES_DIR/.config/nvim" "$HOME/.config/nvim"
 
 # Ghostty: macOS only
@@ -36,6 +55,19 @@ if [ "$(uname)" = "Darwin" ]; then
 else
   echo "  Skipping Ghostty symlink (not on macOS)"
 fi
+
+# Install zsh plugins
+echo ""
+echo "Installing zsh plugins..."
+ZSH_PLUGINS="$HOME/.zsh/plugins"
+mkdir -p "$ZSH_PLUGINS"
+
+clone_plugin "jeffreytse/zsh-vi-mode" "$ZSH_PLUGINS/zsh-vi-mode"
+clone_plugin "joshskidmore/zsh-fzf-history-search" "$ZSH_PLUGINS/zsh-fzf-history-search"
+clone_plugin "zsh-users/zsh-completions" "$ZSH_PLUGINS/zsh-completions"
+clone_plugin "zsh-users/zsh-syntax-highlighting" "$ZSH_PLUGINS/zsh-syntax-highlighting"
+clone_plugin "zsh-users/zsh-history-substring-search" "$ZSH_PLUGINS/zsh-history-substring-search"
+clone_plugin "zsh-users/zsh-autosuggestions" "$ZSH_PLUGINS/zsh-autosuggestions"
 
 # Install TPM if not present
 if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
@@ -49,10 +81,9 @@ else
 fi
 
 echo ""
-echo "✓ Dotfiles installed successfully!"
+echo "Done!"
 echo ""
 echo "Next steps:"
-echo "  1. Start tmux: tmux"
-echo "  2. Install tmux plugins: prefix + I (default: Ctrl+b then I)"
-echo "  3. Open neovim: nvim"
-echo "  4. Lazy.nvim will auto-install plugins and Mason LSP servers"
+echo "  1. Restart your shell or: source ~/.zshrc"
+echo "  2. Start tmux and install plugins: prefix + I (Ctrl+b then I)"
+echo "  3. Open neovim: nvim (lazy.nvim auto-installs plugins)"
