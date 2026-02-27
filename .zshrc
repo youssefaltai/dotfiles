@@ -116,6 +116,9 @@ export NVM_DIR="$HOME/.nvm"
 
 export XDG_CONFIG_HOME="$HOME/.config"
 
+# Add Pub Cache bin
+export PATH="$HOME/fvm/default/bin/:$PATH"
+
 # Dotfiles convenience aliases
 alias dotfiles="cd ~/dotfiles"
 alias dotfiles-sync="cd ~/dotfiles && git pull"
