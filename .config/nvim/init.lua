@@ -290,6 +290,12 @@ require("lazy").setup({
 				topdelete = { text = "‾" },
 				changedelete = { text = "~" },
 			},
+			current_line_blame = true,
+			current_line_blame_opts = {
+				virt_text = true,
+				virt_text_pos = "eol",
+				delay = 1000,
+			},
 		},
 	},
 
@@ -842,17 +848,28 @@ require("lazy").setup({
 		},
 	},
 
-	{ -- High-contrast, vibrant colorscheme with transparency support
-		"scottmckendry/cyberdream.nvim",
+	{ -- One Dark colorscheme
+		"navarasu/onedark.nvim",
 		priority = 1000, -- Make sure to load this before all the other start plugins.
 		config = function()
-			require("cyberdream").setup({
-				transparent = true, -- Perfect for Ghostty's transparent background
-				italic_comments = false,
-				terminal_colors = true,
+			require("onedark").setup({
+				style = "dark",
+				transparent = true,
+				term_colors = true,
+				ending_tildes = false,
+				cmp_itemkind_reverse = false,
+				toggle_style_key = nil,
+				toggle_style_list = { "dark", "darker", "cool", "deep", "warm", "warmer", "light" },
+				code_style = {
+					comments = "italic",
+					keywords = "none",
+					functions = "none",
+					strings = "none",
+					variables = "none",
+				},
 			})
 
-			vim.cmd.colorscheme("cyberdream")
+			vim.cmd.colorscheme("onedark")
 		end,
 	},
 
@@ -943,7 +960,7 @@ require("lazy").setup({
 	require("kickstart.plugins.lint"),
 	require("kickstart.plugins.autopairs"),
 	require("kickstart.plugins.neo-tree"),
-	-- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+	require("kickstart.plugins.gitsigns"), -- adds gitsigns recommend keymaps
 
 	-- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
 	--    This is the easiest way to modularize your config.
