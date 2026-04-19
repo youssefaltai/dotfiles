@@ -577,10 +577,6 @@ if [[ "$(uname)" == "Linux" && -d "/opt/nvim-linux-x86_64/bin" ]]; then
   export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 fi
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-
 export XDG_CONFIG_HOME="$HOME/.config"
 
 # Flutter/Dart (FVM)
