@@ -1,0 +1,17 @@
+# Global gitignore (XDG: ~/.config/git/ignore) — OS & editor cruft only.
+# Project-specific ignores (node_modules/, build/, dist/, .env) belong in each
+# repo's own .gitignore, not here.
+
+# macOS
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Vim / Neovim
+*.swp
+*.swo
+*~
+
+# direnv / mise local
+.direnv/

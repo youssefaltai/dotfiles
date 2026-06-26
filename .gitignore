@@ -1,0 +1,23 @@
+# ~/.config dotfiles — ALLOWLIST model. Keep this repo PRIVATE.
+# Ignore everything, then re-include only the configs we intend to track. This
+# stops any tool that drops tokens/state into ~/.config from being committed.
+# Review `git status` before each commit. To track more later, add `!name/` lines.
+*
+
+!.gitignore
+!Brewfile
+
+# zsh (relocated here via ZDOTDIR)
+!zsh/
+!zsh/**
+zsh/.zsh_history
+zsh/.zcompdump*
+zsh/.zsh_sessions/
+
+# git
+!git/
+!git/**
+
+# neovim (config only; plugins live under ~/.local/share/nvim, not here)
+!nvim/
+!nvim/**
