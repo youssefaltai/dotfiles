@@ -1,0 +1,22 @@
+# ~/.config/starship.toml — minimal. Colors are named ANSI, so the prompt
+# inherits whatever Ghostty theme is active. Full reference: https://starship.rs/config/
+
+add_newline = true
+
+# Prompt arrow: green on success, red after a failed command
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+
+# Compact path (last 3 segments, or repo-relative inside a git repo)
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+
+# Git
+[git_branch]
+symbol = " "
+
+# Only show command duration when it's actually slow
+[cmd_duration]
+min_time = 2000

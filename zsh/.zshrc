@@ -23,7 +23,7 @@ export XDG_CACHE_HOME="$HOME/.cache"
 # !! CLAUDE_CODE_OAUTH_TOKEN on personal. Backup: ~/claude-personal-credentials-BACKUP.json
 #
 # NOTE: CLAUDE_CONFIG_DIR is real but UNDOCUMENTED/unsupported (issue #33430).
-alias claude-personal='claude'
+alias claude-personal='env -u CLAUDE_CONFIG_DIR claude'
 alias claude-reckit='CLAUDE_CONFIG_DIR="$HOME/.claude-reckit" claude'
 # ----------------------------------------------------------------------------
 
@@ -37,9 +37,9 @@ eval "$(mise activate zsh)"
 # --- CLI tools --------------------------------------------------------------
 eval "$(zoxide init zsh)"                    # `z <dir>` smart jump, `zi` interactive
 eval "$(atuin init zsh --disable-up-arrow)"  # Ctrl-R history UI (up-arrow stays native)
-alias ls='eza --group-directories-first'
-alias ll='eza -la --git --group-directories-first'
-alias lt='eza --tree --level=2'
+alias ls='eza --icons --group-directories-first'
+alias ll='eza -la --git --icons --group-directories-first'
+alias lt='eza --tree --level=2 --icons'
 alias lg='lazygit'
 # ----------------------------------------------------------------------------
 

@@ -21,3 +21,12 @@ zsh/.zsh_sessions/
 # neovim (config only; plugins live under ~/.local/share/nvim, not here)
 !nvim/
 !nvim/**
+
+# ghostty + starship
+!ghostty/
+!ghostty/**
+!starship.toml
+
+# claude (system manual, guard hook, statusline, maintenance agent)
+!claude/
+!claude/**
