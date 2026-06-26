@@ -9,6 +9,14 @@ export XDG_STATE_HOME="$HOME/.local/state"
 export XDG_CACHE_HOME="$HOME/.cache"
 # ----------------------------------------------------------------------------
 
+# --- Default editor ---------------------------------------------------------
+# Make Neovim the editor for everything that respects $EDITOR/$VISUAL: git
+# commit/rebase, `Ctrl-X Ctrl-E` to edit the command line in nvim, Claude Code's
+# external-editor key (Ctrl+G), etc. nvim is brew-managed (containment rule).
+export EDITOR="nvim"
+export VISUAL="nvim"
+# ----------------------------------------------------------------------------
+
 # --- Claude Code profiles ---------------------------------------------------
 # On macOS ALL Claude creds live in the Keychain (NOT in a .credentials.json
 # file -- that's the Linux/headless path). The Keychain service name is:
