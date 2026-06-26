@@ -28,19 +28,15 @@ match 'CLAUDE_CODE_OAUTH_TOKEN' \
 match 'security[[:space:]].*(delete-generic-password|claude code-credentials)' \
   && deny "Keychain operations on Claude credentials are forbidden."
 
-# 4. Destroying / overwriting the credential backup.
-match '(rm|rmdir|mv|truncate|tee|dd|>)[^|;&]*claude-personal-credentials-BACKUP' \
-  && deny "The Claude credential backup must not be modified or deleted."
-
-# 5. Removing a whole Claude profile directory.
+# 4. Removing a whole Claude profile directory.
 match 'rm[[:space:]].*(~|\$HOME)/\.claude(-reckit)?/?([[:space:]]|$)' \
   && deny "Removing a Claude profile directory is forbidden."
 
-# 6. Catastrophic recursive deletes of home/root.
+# 5. Catastrophic recursive deletes of home/root.
 match 'rm[[:space:]]+(-[A-Za-z]+[[:space:]]+)*(/|~|~/|\$HOME|\$HOME/|/\*)([[:space:]]|$)' \
   && deny "Catastrophic rm targeting home/root is forbidden."
 
-# 7. Protect the guardrail files themselves from being rewritten via the shell
+# 6. Protect the guardrail files themselves from being rewritten via the shell
 #    (the Edit/Write tools are blocked by deny rules; this closes the Bash path).
 #    Verb may be at start-of-line OR preceded by whitespace.
 match '(>|>>|(^|[[:space:]])(tee|cp|mv|ln)[[:space:]]).*(\.claude(-reckit)?/settings\.json|\.config/claude/(hooks/|statusline\.sh))' \

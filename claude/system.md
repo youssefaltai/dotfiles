@@ -8,11 +8,13 @@ to be run. (This file is shared by both Claude profiles and lives in the dotfile
 - The **personal Claude login is IRREPLACEABLE** — account access was lost and it
   cannot be recreated. NEVER run `claude auth login`/`logout`, NEVER touch the macOS
   Keychain item `Claude Code-credentials`, NEVER set `CLAUDE_CODE_OAUTH_TOKEN`.
-- A read-only backup exists at `~/claude-personal-credentials-BACKUP.json` — never
-  delete, move, or overwrite it.
+- The account-recovery blob (credential + refresh token) lives in the Passwords.app
+  entry **"Claude Code old account credentials"** (full JSON in its notes field) —
+  keep it; it's the only no-login restore path. The former plaintext
+  `~/claude-personal-credentials-BACKUP.json` was removed 2026-06-26.
 - Never run catastrophic deletes (`rm -rf ~`, `rm -rf /`, removing `~/.claude*`).
 - Never read secrets into output or commit them: `~/.ssh/*`, gh tokens
-  (`~/.config/gh*`), the credential backup, any `.env`.
+  (`~/.config/gh*`), any `.env`.
 - **Confirm before outward-facing or irreversible actions**: pushing, publishing,
   force-pushing, deleting repos/files you didn't create, renaming remote repos.
 

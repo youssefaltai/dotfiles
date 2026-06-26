@@ -20,7 +20,8 @@ export XDG_CACHE_HOME="$HOME/.cache"
 #
 # !! PERSONAL ACCOUNT IS IRREPLACEABLE: the login cannot be redone. NEVER run
 # !! `claude auth logout`/`login`, delete its Keychain item, or set
-# !! CLAUDE_CODE_OAUTH_TOKEN on personal. Backup: ~/claude-personal-credentials-BACKUP.json
+# !! CLAUDE_CODE_OAUTH_TOKEN on personal. Recovery blob: Passwords.app entry
+# !! "Claude Code old account credentials" (no-login restore path).
 #
 # NOTE: CLAUDE_CONFIG_DIR is real but UNDOCUMENTED/unsupported (issue #33430).
 alias claude-personal='env -u CLAUDE_CONFIG_DIR claude'
