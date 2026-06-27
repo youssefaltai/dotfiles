@@ -52,6 +52,39 @@ alias lt='eza --tree --level=2 --icons'
 alias lg='lazygit'
 # ----------------------------------------------------------------------------
 
+# --- Vi mode (ZLE) ----------------------------------------------------------
+# Vi keybindings on the command line. Insert mode is the default; Esc -> normal
+# mode (hjkl/w/b/ciw/etc). atuin already binds Ctrl-R in insert mode and `/` in
+# normal mode (see init above), so history search keeps working in both modes.
+bindkey -v
+export KEYTIMEOUT=1                 # 10ms Esc lag -> snappy mode switching
+
+# Cursor shape tracks the mode: steady block in normal, steady bar in insert.
+function zle-keymap-select {
+  case $KEYMAP in
+    vicmd)      printf '\e[2 q' ;;  # block
+    viins|main) printf '\e[6 q' ;;  # bar
+  esac
+}
+zle -N zle-keymap-select
+function zle-line-init { printf '\e[6 q' }  # each new prompt starts in insert
+zle -N zle-line-init
+
+# Keep a few emacs-style edits in insert mode (muscle memory + saner backspace).
+bindkey -M viins '^A' beginning-of-line
+bindkey -M viins '^E' end-of-line
+bindkey -M viins '^K' kill-line
+bindkey -M viins '^U' backward-kill-line
+bindkey -M viins '^W' backward-kill-word
+bindkey -M viins '^?' backward-delete-char   # backspace past the insert point
+bindkey -M viins '^H' backward-delete-char
+
+# `v` in normal mode opens the current command line in $EDITOR (nvim).
+autoload -Uz edit-command-line
+zle -N edit-command-line
+bindkey -M vicmd 'v' edit-command-line
+# ----------------------------------------------------------------------------
+
 # --- Prompt & plugins -------------------------------------------------------
 # Starship: fast Rust prompt, single-file config (~/.config/starship.toml when
 # we add one; the default is already clean, so nothing to configure yet).
