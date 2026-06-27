@@ -106,4 +106,5 @@ vim.api.nvim_create_autocmd("FileType", {
 -- Quality-of-life keymaps
 --------------------------------------------------------------------------------
 map("n", "<leader>w", "<cmd>write<cr>",   { desc = "Save file" })
+map("n", "<leader>x", "<cmd>bdelete<cr>", { desc = "Close buffer" })
 map("n", "<Esc>",     "<cmd>nohlsearch<cr>", { desc = "Clear search highlight" })

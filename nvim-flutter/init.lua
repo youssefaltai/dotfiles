@@ -37,7 +37,7 @@ local function on_attach(client, bufnr)
   bmap("K",  vim.lsp.buf.hover,           "Hover docs")
   bmap("<leader>rn", vim.lsp.buf.rename,      "Rename symbol")
   bmap("<leader>ca", vim.lsp.buf.code_action, "Code action")
-  bmap("<leader>e",  vim.diagnostic.open_float, "Line diagnostics")
+  bmap("<leader>d",  vim.diagnostic.open_float, "Line diagnostics")
   bmap("[d", function() vim.diagnostic.jump({ count = -1 }) end, "Prev diagnostic")
   bmap("]d", function() vim.diagnostic.jump({ count =  1 }) end, "Next diagnostic")
 
@@ -48,7 +48,7 @@ local function on_attach(client, bufnr)
   -- Inline color swatches via the native API (0.12+); replaces flutter-tools'
   -- deprecated lsp.color option.
   if client:supports_method("textDocument/documentColor") then
-    vim.lsp.document_color.enable(true, bufnr)
+    vim.lsp.document_color.enable(true, { bufnr = bufnr })
   end
 end
 
