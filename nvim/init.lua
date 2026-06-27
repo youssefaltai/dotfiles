@@ -37,8 +37,10 @@ o.cursorline = true          -- highlight the line the cursor is on
 -- Plugins  (built-in vim.pack — clones missing plugins on first launch)
 --------------------------------------------------------------------------------
 vim.pack.add({
-  { src = "https://github.com/rebelot/kanagawa.nvim" },  -- colorscheme
-  { src = "https://github.com/ibhagwan/fzf-lua" },       -- fuzzy finder (fzf/rg/fd)
+  { src = "https://github.com/rebelot/kanagawa.nvim" },         -- colorscheme
+  { src = "https://github.com/ibhagwan/fzf-lua" },              -- fuzzy finder (fzf/rg/fd)
+  { src = "https://github.com/stevearc/oil.nvim" },             -- file explorer (edit fs as a buffer)
+  { src = "https://github.com/mrjones2014/smart-splits.nvim" }, -- seamless nvim<->tmux pane nav
 })
 
 -- Colorscheme
@@ -52,6 +54,14 @@ map("n", "<leader>ff", fzf.files,     { desc = "Find files" })
 map("n", "<leader>fg", fzf.live_grep, { desc = "Live grep" })
 map("n", "<leader>fb", fzf.buffers,   { desc = "Buffers" })
 map("n", "<leader>fh", fzf.help_tags, { desc = "Help tags" })
+
+-- File explorer (oil): browse and edit the filesystem like a normal buffer.
+-- `-` opens the parent dir; edit lines then `:w` to apply (create/rename/delete).
+require("oil").setup({
+  default_file_explorer = true,            -- take over from netrw
+  view_options = { show_hidden = true },   -- show dotfiles
+})
+map("n", "-", "<cmd>Oil<cr>", { desc = "Open parent dir (oil)" })
 
 --------------------------------------------------------------------------------
 -- Built-in treesitter highlighting
