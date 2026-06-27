@@ -1,3 +1,4 @@
+tap "leoafarias/fvm"
 # Improved shell history for zsh, bash, fish and nushell
 brew "atuin"
 # Clone of cat(1) with syntax highlighting and Git integration
@@ -6,8 +7,12 @@ brew "bat"
 brew "eza"
 # Simple, fast and user-friendly alternative to find
 brew "fd"
+# Manage Flutter SDK versions per project
+brew "fvm"
 # Command-line fuzzy finder written in Go
 brew "fzf"
+# GitHub command-line tool
+brew "gh"
 # Syntax-highlighting pager for git and diff output
 brew "git-delta"
 # Lightweight and flexible command-line JSON processor
@@ -28,5 +33,8 @@ brew "zoxide"
 brew "zsh-autosuggestions"
 # Fish shell like syntax highlighting for zsh
 brew "zsh-syntax-highlighting"
+cask "font-jetbrains-mono-nerd-font"
 # Terminal emulator that uses platform-native UI and GPU acceleration
 cask "ghostty"
+# Web browser
+cask "google-chrome"
