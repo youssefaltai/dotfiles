@@ -64,6 +64,20 @@ require("oil").setup({
 map("n", "-", "<cmd>Oil<cr>", { desc = "Open parent dir (oil)" })
 
 --------------------------------------------------------------------------------
+-- Seamless navigation between nvim splits and tmux panes
+-- Ctrl-h/j/k/l moves the cursor; at the edge of nvim it hands off to the
+-- adjacent tmux pane (and back). smart-splits sets the tmux @pane-is-vim
+-- variable so the tmux side (see ~/.config/tmux/tmux.conf) routes these keys
+-- without scanning processes on every press — fast, no lag.
+--------------------------------------------------------------------------------
+local ss = require("smart-splits")
+ss.setup({ at_edge = "stop" })  -- at the outermost edge, stay put (don't wrap)
+map("n", "<C-h>", ss.move_cursor_left,  { desc = "Go to split/pane left" })
+map("n", "<C-j>", ss.move_cursor_down,  { desc = "Go to split/pane down" })
+map("n", "<C-k>", ss.move_cursor_up,    { desc = "Go to split/pane up" })
+map("n", "<C-l>", ss.move_cursor_right, { desc = "Go to split/pane right" })
+
+--------------------------------------------------------------------------------
 -- Built-in treesitter highlighting
 -- 0.12 ships parsers for common languages, so highlighting needs no plugin.
 -- Start it for any buffer that has a bundled parser (pcall = silent if none).

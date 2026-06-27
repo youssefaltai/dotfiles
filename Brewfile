@@ -27,6 +27,8 @@ brew "neovim"
 brew "ripgrep"
 # Cross-shell prompt for astronauts
 brew "starship"
+# Terminal multiplexer
+brew "tmux"
 # Shell extension to navigate your filesystem faster
 brew "zoxide"
 # Fish-like fast/unobtrusive autosuggestions for zsh
