@@ -1,5 +1,21 @@
 export PATH="$HOME/.local/bin:$PATH"
 
+# --- Always in tmux ---------------------------------------------------------
+# Land every interactive terminal inside tmux: attach to the persistent "main"
+# session if it exists, else create it (new-session -A -s). `exec` replaces this
+# shell, so quitting tmux closes the terminal like a normal exit. Runs early so
+# we jump in before sourcing the heavy plugins below. Guards:
+#   $TMUX empty       don't nest — the inner shell re-sources this file
+#   -o interactive    skip scripts and other non-interactive invocations
+#   -t 1              stdout is a tty — avoids "not a terminal" from tmux
+#   $NVIM empty       don't hijack a shell spawned inside nvim's :terminal
+#   command -v tmux   no-op if tmux somehow isn't on PATH yet
+if [[ -z "$TMUX" && -o interactive && -t 1 && -z "$NVIM" ]] \
+   && command -v tmux >/dev/null; then
+  exec tmux new-session -A -s main
+fi
+# ----------------------------------------------------------------------------
+
 # --- XDG Base Directory spec ------------------------------------------------
 # Funnel all app config/data/state/cache into predictable dirs so $HOME stays
 # clean and your whole setup = one ~/.config folder (your dotfiles repo).
