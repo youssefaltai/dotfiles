@@ -73,3 +73,11 @@ to be run. (This file is shared by both Claude profiles and lives in the dotfile
   Brewfile and commit.
 - Update nvim plugins: `:lua vim.pack.update()` (or headless equivalent).
 - Keep `~/.config` committed and pushed after meaningful config changes.
+
+## 9. System specs (this machine)
+- **MacBook Pro** (`Mac17,2`) — Apple **M5**, 10 cores (4 performance + 6 efficiency).
+- **32 GB** unified memory, **arm64**.
+- **926 GB** internal SSD.
+- macOS **26.5.1** (build `25F80`).
+- Static snapshot — edit by hand if hardware/OS changes meaningfully
+  (`sysctl -n hw.model machdep.cpu.brand_string hw.memsize` + `sw_vers` to refresh).
