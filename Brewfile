@@ -3,6 +3,14 @@ tap "leoafarias/fvm"
 brew "atuin"
 # Clone of cat(1) with syntax highlighting and Git integration
 brew "bat"
+# Yet another cross-platform graphical process/system monitor
+brew "bottom"
+# Container runtimes on MacOS (and Linux) with minimal setup
+brew "colima"
+# Pack, ship and run any application as a lightweight container
+brew "docker"
+# Isolated development environments using Docker
+brew "docker-compose"
 # Modern, maintained replacement for ls
 brew "eza"
 # Simple, fast and user-friendly alternative to find
@@ -19,6 +27,8 @@ brew "git-delta"
 brew "jq"
 # Simple terminal UI for git commands
 brew "lazygit"
+# Sudoless performance monitoring for Apple Silicon processors
+brew "macmon"
 # Polyglot runtime manager (asdf rust clone)
 brew "mise"
 # Ambitious Vim-fork focused on extensibility and agility
