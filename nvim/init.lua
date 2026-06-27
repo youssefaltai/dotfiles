@@ -79,6 +79,19 @@ map("n", "<C-k>", ss.move_cursor_up,    { desc = "Go to split/pane up" })
 map("n", "<C-l>", ss.move_cursor_right, { desc = "Go to split/pane right" })
 
 --------------------------------------------------------------------------------
+-- Jump anywhere on screen (flash.nvim)
+-- `s` then 2 chars labels every match on screen — tap a label to jump there.
+-- setup() also upgrades the built-in f/t/F/T into multi-line, labelled hops, so
+-- the motions you already use reach further for free. `S` jumps by treesitter
+-- node (structural select/jump). The native `s`/`S` (substitute) are gone —
+-- use `cl`/`cc`, which do exactly the same edit.
+--------------------------------------------------------------------------------
+local flash = require("flash")
+flash.setup({})
+map({ "n", "x", "o" }, "s", flash.jump,       { desc = "Flash jump" })
+map({ "n", "x", "o" }, "S", flash.treesitter, { desc = "Flash treesitter select" })
+
+--------------------------------------------------------------------------------
 -- Built-in treesitter highlighting
 -- 0.12 ships parsers for common languages, so highlighting needs no plugin.
 -- Start it for any buffer that has a bundled parser (pcall = silent if none).
