@@ -21,6 +21,9 @@ zsh/.zsh_sessions/
 # neovim (config only; plugins live under ~/.local/share/nvim, not here)
 !nvim/
 !nvim/**
+# neovim Flutter layer, used only in ~/work/reckit (via NVIM_APPNAME)
+!nvim-flutter/
+!nvim-flutter/**
 
 # ghostty + starship
 !ghostty/

@@ -65,8 +65,11 @@ to be run. (This file is shared by both Claude profiles and lives in the dotfile
   `GH_CONFIG_DIR`) needs a one-time `mise trust` in that dir.
 
 ## 7. Editor
-- Neovim 0.12, minimal `~/.config/nvim/init.lua`, plugins via built-in `vim.pack`
-  (lockfile `nvim-pack-lock.json`). No plugin-manager framework.
+- Neovim 0.12, plugins via built-in `vim.pack`. No plugin-manager framework.
+- **Base config**: `~/.config/nvim/init.lua` (lockfile `nvim-pack-lock.json`). Used everywhere.
+- **Flutter layer**: `~/.config/nvim-flutter/init.lua` — sources the base config then adds
+  Dart LSP + flutter-tools. Activated via `NVIM_APPNAME=nvim-flutter` (set by mise in
+  `~/work/reckit/`). Its plugins and state live under `~/.local/share/nvim-flutter`.
 
 ## 8. Maintenance routines
 - Update: `brew update && brew upgrade && brew cleanup`, then regenerate the
