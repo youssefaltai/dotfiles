@@ -2,7 +2,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # --- XDG Base Directory spec ------------------------------------------------
 # Funnel all app config/data/state/cache into predictable dirs so $HOME stays
-# clean and your whole setup = one ~/.config folder (your future dotfiles repo).
+# clean and your whole setup = one ~/.config folder (your dotfiles repo).
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_STATE_HOME="$HOME/.local/state"
