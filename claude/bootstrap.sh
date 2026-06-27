@@ -3,7 +3,7 @@
 # Prereq: the dotfiles repo is cloned so ~/.config/claude/{system.md,
 # hooks/guard.sh, statusline.sh, agents/} exist.
 # Run ONCE before relying on the guard (it writes settings.json, which the live
-# guard's rule 7 would otherwise block).
+# guard's rule 6 would otherwise block).
 set -e
 H="$HOME"
 P="$H/.claude"; R="$H/.claude-reckit"

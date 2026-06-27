@@ -1,7 +1,7 @@
 # ~/.config dotfiles — ALLOWLIST model. Keep this repo PRIVATE.
 # Ignore everything, then re-include only the configs we intend to track. This
 # stops any tool that drops tokens/state into ~/.config from being committed.
-# Review `git status` before each commit. To track more later, add `!name/` lines.
+# Review `git status` before each commit. To track more later, add `!name/` and `!name/**` lines.
 *
 
 !.gitignore
@@ -27,6 +27,6 @@ zsh/.zsh_sessions/
 !ghostty/**
 !starship.toml
 
-# claude (system manual, guard hook, statusline, maintenance agent)
+# claude (system manual, bootstrap script, guard hook, statusline, maintenance agent)
 !claude/
 !claude/**
