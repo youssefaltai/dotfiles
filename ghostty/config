@@ -16,3 +16,8 @@ window-padding-balance = true
 macos-titlebar-style = tabs
 cursor-style = bar
 mouse-hide-while-typing = true
+
+# Keyboard — make the LEFT Option key behave as Alt/Meta so terminal apps
+# (e.g. tmux's M-hjkl pane resize) can see it. The RIGHT Option key stays a
+# normal macOS compose key, so é / em-dash / etc. still type fine.
+macos-option-as-alt = left
