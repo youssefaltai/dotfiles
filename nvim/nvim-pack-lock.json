@@ -12,9 +12,13 @@
       "rev": "bb85e4bfc8d89b0e62c8fa53ccdd13d12e2f77b3",
       "src": "https://github.com/rebelot/kanagawa.nvim"
     },
-    "oil.nvim": {
-      "rev": "b73018b75affd13fa38e2fc94ef753b465f770d7",
-      "src": "https://github.com/stevearc/oil.nvim"
+    "nvim-tree.lua": {
+      "rev": "8e8be709c9a93e1ebefde7964884a8b564bfd3e0",
+      "src": "https://github.com/nvim-tree/nvim-tree.lua"
+    },
+    "nvim-web-devicons": {
+      "rev": "dfbfaa967a6f7ec50789bead7ef87e336c1fa63c",
+      "src": "https://github.com/nvim-tree/nvim-web-devicons"
     },
     "smart-splits.nvim": {
       "rev": "0e5bc00d2a32e6c782cd279cb96ab6c7ae49cd94",

@@ -9,7 +9,7 @@
 -- isolated from the personal config — nothing here leaks into other work.
 
 --------------------------------------------------------------------------------
--- 1. Base config (leader, options, fzf, oil, splits, treesitter, keymaps)
+-- 1. Base config (leader, options, fzf, nvim-tree, splits, treesitter, keymaps)
 --------------------------------------------------------------------------------
 dofile(vim.fn.expand("~/.config/nvim/init.lua"))
 

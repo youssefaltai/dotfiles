@@ -39,7 +39,8 @@ o.cursorline = true          -- highlight the line the cursor is on
 vim.pack.add({
   { src = "https://github.com/rebelot/kanagawa.nvim" },         -- colorscheme
   { src = "https://github.com/ibhagwan/fzf-lua" },              -- fuzzy finder (fzf/rg/fd)
-  { src = "https://github.com/stevearc/oil.nvim" },             -- file explorer (edit fs as a buffer)
+  { src = "https://github.com/nvim-tree/nvim-tree.lua" },       -- docked sidebar file tree
+  { src = "https://github.com/nvim-tree/nvim-web-devicons" },   -- file-type icons (needs a Nerd Font)
   { src = "https://github.com/mrjones2014/smart-splits.nvim" }, -- seamless nvim<->tmux pane nav
   { src = "https://github.com/folke/flash.nvim" },              -- jump anywhere on screen in a few keystrokes
 })
@@ -56,13 +57,19 @@ map("n", "<leader>fg", fzf.live_grep, { desc = "Live grep" })
 map("n", "<leader>fb", fzf.buffers,   { desc = "Buffers" })
 map("n", "<leader>fh", fzf.help_tags, { desc = "Help tags" })
 
--- File explorer (oil): browse and edit the filesystem like a normal buffer.
--- `-` opens the parent dir; edit lines then `:w` to apply (create/rename/delete).
-require("oil").setup({
-  default_file_explorer = true,            -- take over from netrw
-  view_options = { show_hidden = true },   -- show dotfiles
+-- File explorer (nvim-tree): a docked sidebar tree on the left.
+-- `<leader>e` toggles it; inside the tree `<CR>` opens, `a` creates, `d` deletes,
+-- `r` renames, `?` shows all mappings. netrw is disabled so the tree owns `-`/dirs.
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+require("nvim-tree").setup({
+  view = { width = 35 },                       -- sidebar width
+  renderer = { group_empty = true },           -- collapse chains of empty dirs
+  filters = { dotfiles = false },              -- show hidden files (matches old oil setup)
+  update_focused_file = { enable = true },     -- follow the file in the active buffer
 })
-map("n", "-", "<cmd>Oil<cr>", { desc = "Open parent dir (oil)" })
+map("n", "<leader>e", "<cmd>NvimTreeToggle<cr>",   { desc = "Toggle file tree" })
+map("n", "<leader>E", "<cmd>NvimTreeFindFile<cr>", { desc = "Reveal file in tree" })
 
 --------------------------------------------------------------------------------
 -- Seamless navigation between nvim splits and tmux panes
