@@ -41,6 +41,7 @@ vim.pack.add({
   { src = "https://github.com/ibhagwan/fzf-lua" },              -- fuzzy finder (fzf/rg/fd)
   { src = "https://github.com/stevearc/oil.nvim" },             -- file explorer (edit fs as a buffer)
   { src = "https://github.com/mrjones2014/smart-splits.nvim" }, -- seamless nvim<->tmux pane nav
+  { src = "https://github.com/folke/flash.nvim" },              -- jump anywhere on screen in a few keystrokes
 })
 
 -- Colorscheme
