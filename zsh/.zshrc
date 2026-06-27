@@ -9,6 +9,13 @@ export XDG_STATE_HOME="$HOME/.local/state"
 export XDG_CACHE_HOME="$HOME/.cache"
 # ----------------------------------------------------------------------------
 
+# --- FVM (Flutter Version Management) ---------------------------------------
+# fvm defaults its SDK cache to ~/fvm (non-hidden, clutters $HOME). Redirect it
+# under XDG_DATA_HOME so $HOME stays clean. FVM_CACHE_PATH is the supported var
+# (FVM_HOME is the deprecated legacy fallback). Docs: fvm.app/documentation.
+export FVM_CACHE_PATH="$XDG_DATA_HOME/fvm"
+# ----------------------------------------------------------------------------
+
 # --- Default editor ---------------------------------------------------------
 # Make Neovim the editor for everything that respects $EDITOR/$VISUAL: git
 # commit/rebase, `Ctrl-X Ctrl-E` to edit the command line in nvim, Claude Code's
