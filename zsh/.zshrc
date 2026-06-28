@@ -50,6 +50,15 @@ export npm_config_cache="$XDG_CACHE_HOME/npm"
 export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
 # ----------------------------------------------------------------------------
 
+# --- Docker -----------------------------------------------------------------
+# The Docker CLI stores config (config.json, contexts/, creds) in ~/.docker by
+# default. DOCKER_CONFIG relocates that directory. Docs:
+# docs.docker.com/reference/cli/docker. (Note: Docker *Desktop* recreates
+# ~/.docker regardless of this var — not an issue here, this machine runs the
+# brew CLI without Desktop.)
+export DOCKER_CONFIG="$XDG_CONFIG_HOME/docker"
+# ----------------------------------------------------------------------------
+
 # --- Default editor ---------------------------------------------------------
 # Make Neovim the editor for everything that respects $EDITOR/$VISUAL: git
 # commit/rebase, `Ctrl-X Ctrl-E` to edit the command line in nvim, Claude Code's
