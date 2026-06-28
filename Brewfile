@@ -1,4 +1,4 @@
-tap "leoafarias/fvm"
+tap "leoafarias/fvm", trusted: { formulae: ["fvm"] }
 # Improved shell history for zsh, bash, fish and nushell
 brew "atuin"
 # Clone of cat(1) with syntax highlighting and Git integration
