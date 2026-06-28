@@ -18,8 +18,8 @@ conventions, then perform the requested upkeep following these routines.
 - Commits use the personal identity and are SSH-signed.
 
 ## Neovim
-- Update plugins for the base config: `nvim --headless "+lua vim.pack.update()" +qa`.
-- Update plugins for the Flutter layer: `NVIM_APPNAME=nvim-flutter nvim --headless "+lua vim.pack.update()" +qa`.
+- Update plugins for the base config: `nvim --headless "+lua vim.pack.update(nil, { force = true })" +qa`.
+- Update plugins for the Flutter layer: `NVIM_APPNAME=nvim-flutter nvim --headless "+lua vim.pack.update(nil, { force = true })" +qa`.
 - Both configs must be updated; they have separate plugin stores.
 
 ## Documentation & comment accuracy
