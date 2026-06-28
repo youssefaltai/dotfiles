@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # Bootstrap the per-profile Claude Code wiring on a fresh machine.
 # Prereq: the dotfiles repo is cloned so ~/.config/claude/{system.md,
-# hooks/guard.sh, statusline.sh, agents/} exist.
+# hooks/guard.sh, statusline.sh, agents/, skills/} exist.
 # Run ONCE before relying on the guard (it writes settings.json, which the live
 # guard's rule 6 would otherwise block).
 set -e
 H="$HOME"
 P="$H/.claude"; R="$H/.claude-reckit"
 
-mkdir -p "$P/agents" "$R/agents"
+mkdir -p "$P/agents" "$R/agents" "$R/skills"
 chmod +x "$H/.config/claude/hooks/guard.sh" "$H/.config/claude/statusline.sh"
 
 cat > "$P/CLAUDE.md" <<'EOF'
@@ -47,5 +47,9 @@ gen_settings ',"tui":"fullscreen","editorMode":"vim"' > "$R/settings.json"
 
 ln -sf "$H/.config/claude/agents/system-maintainer.md" "$P/agents/system-maintainer.md"
 ln -sf "$H/.config/claude/agents/system-maintainer.md" "$R/agents/system-maintainer.md"
+
+# Skills — reckit profile only for now (grill-me + its grilling companion).
+ln -sfn "$H/.config/claude/skills/grill-me" "$R/skills/grill-me"
+ln -sfn "$H/.config/claude/skills/grilling" "$R/skills/grilling"
 
 echo "Bootstrapped Claude wiring for personal + reckit profiles."
