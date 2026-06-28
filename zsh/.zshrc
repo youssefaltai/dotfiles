@@ -32,6 +32,24 @@ export XDG_CACHE_HOME="$HOME/.cache"
 export FVM_CACHE_PATH="$XDG_DATA_HOME/fvm"
 # ----------------------------------------------------------------------------
 
+# --- Dart / pub cache -------------------------------------------------------
+# Dart & Flutter download packages into ~/.pub-cache by default (clutters $HOME,
+# grows large). PUB_CACHE is the officially supported override. Docs:
+# dart.dev/tools/pub/environment-variables. The existing cache was moved here so
+# nothing re-downloads; run `dart pub get` / `flutter pub get` in a project once
+# to repoint its .dart_tool/package_config.json at the new path.
+export PUB_CACHE="$XDG_CACHE_HOME/pub"
+# ----------------------------------------------------------------------------
+
+# --- npm --------------------------------------------------------------------
+# npm ignores XDG: it defaults its cache to ~/.npm and per-user config to
+# ~/.npmrc. The officially documented npm_config_* env vars relocate both under
+# XDG. userconfig points at the file itself (not a dir) and notably can't be set
+# from inside .npmrc. Docs: docs.npmjs.com/cli/v11/using-npm/config.
+export npm_config_cache="$XDG_CACHE_HOME/npm"
+export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
+# ----------------------------------------------------------------------------
+
 # --- Default editor ---------------------------------------------------------
 # Make Neovim the editor for everything that respects $EDITOR/$VISUAL: git
 # commit/rebase, `Ctrl-X Ctrl-E` to edit the command line in nvim, Claude Code's
