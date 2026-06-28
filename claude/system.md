@@ -34,6 +34,10 @@ to be run. (This file is shared by both Claude profiles and lives in the dotfile
   - `~/work/reckit/`   — reckit/company projects (uses the reckit identity override).
   - future companies → `~/work/<company>/`.
 - Temp/scratch goes in a tmp dir, never in `~` or `~/.config`.
+- **Tools that ignore XDG by default** (npm, pub/Dart, Docker CLI) are pinned to
+  XDG dirs via env vars in `~/.config/zsh/.zshrc` (`npm_config_cache`,
+  `NPM_CONFIG_USERCONFIG`, `PUB_CACHE`, `DOCKER_CONFIG`); macOS shell-session save
+  is off via `SHELL_SESSIONS_DISABLE=1` in `.zprofile`. See those files' comments.
 - **Exception — Dart SDK**: `~/.dartServer`, `~/.dart-tool`, `~/.flutter`, and
   `~/.flutter-devtools` remain in `$HOME`; the Dart SDK hardcodes these paths and
   ignores any env override. Do not delete them.
