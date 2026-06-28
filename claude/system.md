@@ -34,6 +34,9 @@ to be run. (This file is shared by both Claude profiles and lives in the dotfile
   - `~/work/reckit/`   — reckit/company projects (uses the reckit identity override).
   - future companies → `~/work/<company>/`.
 - Temp/scratch goes in a tmp dir, never in `~` or `~/.config`.
+- **Exception — Dart SDK**: `~/.dartServer`, `~/.dart-tool`, `~/.flutter`, and
+  `~/.flutter-devtools` remain in `$HOME`; the Dart SDK hardcodes these paths and
+  ignores any env override. Do not delete them.
 
 ## 3. Tools — prefer these (they are installed)
 `rg` over grep, `fd` over find, `eza` over ls, `bat` over cat, plus `fzf`, `zoxide`
@@ -74,7 +77,12 @@ to be run. (This file is shared by both Claude profiles and lives in the dotfile
 ## 8. Maintenance routines
 - Update: `brew update && brew upgrade && brew cleanup`, then regenerate the
   Brewfile and commit.
-- Update nvim plugins: `:lua vim.pack.update()` (or headless equivalent).
+- Update nvim plugins (run for both configs; `force = true` skips the interactive
+  confirm buffer that would otherwise hang headlessly):
+  ```
+  nvim --headless "+lua vim.pack.update(nil, { force = true })" +qa
+  NVIM_APPNAME=nvim-flutter nvim --headless "+lua vim.pack.update(nil, { force = true })" +qa
+  ```
 - Keep `~/.config` committed and pushed after meaningful config changes.
 
 ## 9. System specs (this machine)
