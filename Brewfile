@@ -1,4 +1,4 @@
-tap "leoafarias/fvm"
+tap "leoafarias/fvm", trusted: { formulae: ["fvm"] }
 # Improved shell history for zsh, bash, fish and nushell
 brew "atuin"
 # Clone of cat(1) with syntax highlighting and Git integration
@@ -23,6 +23,8 @@ brew "fzf"
 brew "gh"
 # Syntax-highlighting pager for git and diff output
 brew "git-delta"
+# Open-source video transcoder available for Linux, Mac, and Windows
+brew "handbrake"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
 # Simple terminal UI for git commands
