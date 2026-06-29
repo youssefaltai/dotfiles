@@ -1,4 +1,4 @@
-tap "leoafarias/fvm", trusted: { formulae: ["fvm"] }
+tap "leoafarias/fvm"
 # Improved shell history for zsh, bash, fish and nushell
 brew "atuin"
 # Clone of cat(1) with syntax highlighting and Git integration
@@ -52,3 +52,5 @@ cask "font-jetbrains-mono-nerd-font"
 cask "ghostty"
 # Web browser
 cask "google-chrome"
+# Team communication and collaboration software
+cask "slack"
