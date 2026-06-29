@@ -74,9 +74,9 @@ map("n", "<leader>E", "<cmd>NvimTreeFindFile<cr>", { desc = "Reveal file in tree
 --------------------------------------------------------------------------------
 -- Seamless navigation between nvim splits and tmux panes
 -- Ctrl-h/j/k/l moves the cursor; at the edge of nvim it hands off to the
--- adjacent tmux pane (and back). smart-splits sets the tmux @pane-is-vim
--- variable so the tmux side (see ~/.config/tmux/tmux.conf) routes these keys
--- without scanning processes on every press — fast, no lag.
+-- adjacent tmux pane (and back). The tmux side (see ~/.config/tmux/tmux.conf)
+-- routes these keys into nvim whenever the focused pane is running nvim, so the
+-- handoff is seamless both ways without scanning processes on every press.
 --------------------------------------------------------------------------------
 local ss = require("smart-splits")
 ss.setup({ at_edge = "stop" })  -- at the outermost edge, stay put (don't wrap)
