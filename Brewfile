@@ -1,4 +1,4 @@
-tap "leoafarias/fvm", trusted: { formulae: ["fvm"] }
+tap "leoafarias/fvm"
 # Improved shell history for zsh, bash, fish and nushell
 brew "atuin"
 # Clone of cat(1) with syntax highlighting and Git integration
@@ -23,6 +23,10 @@ brew "fzf"
 brew "gh"
 # Syntax-highlighting pager for git and diff output
 brew "git-delta"
+# Open source programming language to build simple/reliable/efficient software
+brew "go"
+# Language server for the Go language
+brew "gopls"
 # Open-source video transcoder available for Linux, Mac, and Windows
 brew "handbrake"
 # Lightweight and flexible command-line JSON processor
@@ -47,6 +51,8 @@ brew "zoxide"
 brew "zsh-autosuggestions"
 # Fish shell like syntax highlighting for zsh
 brew "zsh-syntax-highlighting"
+# Brings the power of Copilot coding agent directly to your terminal
+cask "copilot-cli"
 # Collaborative team software
 cask "figma"
 cask "font-jetbrains-mono-nerd-font"

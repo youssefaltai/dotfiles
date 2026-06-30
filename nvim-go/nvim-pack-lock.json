@@ -1,0 +1,28 @@
+{
+  "plugins": {
+    "flash.nvim": {
+      "rev": "fcea7ff883235d9024dc41e638f164a450c14ca2",
+      "src": "https://github.com/folke/flash.nvim"
+    },
+    "fzf-lua": {
+      "rev": "39da6060d53659acf3ec118200bc48721b29b8fd",
+      "src": "https://github.com/ibhagwan/fzf-lua"
+    },
+    "kanagawa.nvim": {
+      "rev": "bb85e4bfc8d89b0e62c8fa53ccdd13d12e2f77b3",
+      "src": "https://github.com/rebelot/kanagawa.nvim"
+    },
+    "nvim-tree.lua": {
+      "rev": "8e8be709c9a93e1ebefde7964884a8b564bfd3e0",
+      "src": "https://github.com/nvim-tree/nvim-tree.lua"
+    },
+    "nvim-web-devicons": {
+      "rev": "dfbfaa967a6f7ec50789bead7ef87e336c1fa63c",
+      "src": "https://github.com/nvim-tree/nvim-web-devicons"
+    },
+    "smart-splits.nvim": {
+      "rev": "0e5bc00d2a32e6c782cd279cb96ab6c7ae49cd94",
+      "src": "https://github.com/mrjones2014/smart-splits.nvim"
+    }
+  }
+}

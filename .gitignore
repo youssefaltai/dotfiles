@@ -24,6 +24,9 @@ zsh/.zsh_sessions/
 # neovim Flutter layer, used only in ~/work/reckit (via NVIM_APPNAME)
 !nvim-flutter/
 !nvim-flutter/**
+# neovim Go layer, used in folders that set NVIM_APPNAME=nvim-go (via mise)
+!nvim-go/
+!nvim-go/**
 
 # ghostty + starship
 !ghostty/
