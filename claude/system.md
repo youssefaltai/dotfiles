@@ -41,6 +41,8 @@ to be run. (This file is shared by both Claude profiles and lives in the dotfile
 - **Exception — Dart SDK**: `~/.dartServer`, `~/.dart-tool`, `~/.flutter`, and
   `~/.flutter-devtools` remain in `$HOME`; the Dart SDK hardcodes these paths and
   ignores any env override. Do not delete them.
+- **Exception — OpenAI Codex CLI**: `~/.codex` remains in `$HOME`; the Codex CLI
+  hardcodes this path with no XDG override. Kept intentionally.
 
 ## 3. Tools — prefer these (they are installed)
 `rg` over grep, `fd` over find, `eza` over ls, `bat` over cat, plus `fzf`, `zoxide`
@@ -70,6 +72,10 @@ to be run. (This file is shared by both Claude profiles and lives in the dotfile
 - Projects declare runtimes/env in a `mise.toml`: `mise use node@22`, etc.
 - Per-project env via `[env]` (e.g. `CLAUDE_CONFIG_DIR`, `NVIM_APPNAME`,
   `GH_CONFIG_DIR`) needs a one-time `mise trust` in that dir.
+- **Exception — Flutter SDK**: Flutter SDK versions are managed by `fvm` (installed
+  via the `leoafarias/fvm` Homebrew tap), not mise. `fvm` works alongside mise in
+  `~/work/reckit/` and stores SDKs under `~/.local/share/fvm` (redirected via
+  `FVM_CACHE_PATH` in `.zshrc`).
 
 ## 7. Editor
 - Neovim 0.12, plugins via built-in `vim.pack`. No plugin-manager framework.

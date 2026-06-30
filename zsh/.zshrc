@@ -59,6 +59,13 @@ export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
 export DOCKER_CONFIG="$XDG_CONFIG_HOME/docker"
 # ----------------------------------------------------------------------------
 
+# --- Atuin ------------------------------------------------------------------
+# atuin defaults its log output to ~/.atuin/logs (outside XDG). ATUIN_LOG_DIR
+# redirects logs to XDG_STATE_HOME, keeping $HOME clean. The main config and
+# DB stay at ~/.config/atuin and ~/.local/share/atuin respectively.
+export ATUIN_LOG_DIR="$XDG_STATE_HOME/atuin"
+# ----------------------------------------------------------------------------
+
 # --- Default editor ---------------------------------------------------------
 # Make Neovim the editor for everything that respects $EDITOR/$VISUAL: git
 # commit/rebase, `Ctrl-X Ctrl-E` to edit the command line in nvim, Claude Code's

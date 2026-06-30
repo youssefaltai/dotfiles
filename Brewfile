@@ -23,10 +23,6 @@ brew "fzf"
 brew "gh"
 # Syntax-highlighting pager for git and diff output
 brew "git-delta"
-# Open source programming language to build simple/reliable/efficient software
-brew "go"
-# Language server for the Go language
-brew "gopls"
 # Open-source video transcoder available for Linux, Mac, and Windows
 brew "handbrake"
 # Lightweight and flexible command-line JSON processor
@@ -51,8 +47,12 @@ brew "zoxide"
 brew "zsh-autosuggestions"
 # Fish shell like syntax highlighting for zsh
 brew "zsh-syntax-highlighting"
+# OpenAI's coding agent that runs in your terminal
+cask "codex"
 # Brings the power of Copilot coding agent directly to your terminal
 cask "copilot-cli"
+# Voice and text chat software
+cask "discord"
 # Collaborative team software
 cask "figma"
 cask "font-jetbrains-mono-nerd-font"
