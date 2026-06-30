@@ -43,6 +43,7 @@ vim.pack.add({
   { src = "https://github.com/nvim-tree/nvim-web-devicons" },   -- file-type icons (needs a Nerd Font)
   { src = "https://github.com/mrjones2014/smart-splits.nvim" }, -- seamless nvim<->tmux pane nav
   { src = "https://github.com/folke/flash.nvim" },              -- jump anywhere on screen in a few keystrokes
+  { src = "https://github.com/github/copilot.vim" },            -- GitHub Copilot AI pair programmer
 })
 
 -- Colorscheme
@@ -97,6 +98,14 @@ local flash = require("flash")
 flash.setup({})
 map({ "n", "x", "o" }, "s", flash.jump,       { desc = "Flash jump" })
 map({ "n", "x", "o" }, "S", flash.treesitter, { desc = "Flash treesitter select" })
+
+--------------------------------------------------------------------------------
+-- GitHub Copilot (copilot.vim)
+-- Press Tab to accept suggestions, Alt-] to next suggestion, Alt-[ to previous
+-- Run `:Copilot setup` first time to authenticate with GitHub
+--------------------------------------------------------------------------------
+vim.g.copilot_no_tab_map = true  -- we use tab for completion, so disable default tab mapping
+map("i", "<Tab>", 'copilot#Accept("<CR>")', { expr = true, script = true })
 
 --------------------------------------------------------------------------------
 -- Built-in treesitter highlighting
