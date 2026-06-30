@@ -129,10 +129,30 @@ bindkey -M viins '^W' backward-kill-word
 bindkey -M viins '^?' backward-delete-char   # backspace past the insert point
 bindkey -M viins '^H' backward-delete-char
 
-# `v` in normal mode opens the current command line in $EDITOR (nvim).
-autoload -Uz edit-command-line
-zle -N edit-command-line
-bindkey -M vicmd 'v' edit-command-line
+# Note: `v` in normal mode stays at zsh's default (visual-mode) — we don't bind
+# it to edit-command-line, so it never drops the line into nvim.
+
+# Vim text objects (ci" di( ciw ya{ vi> ...). All three widgets ship with zsh
+# itself (/usr/share/zsh/$ZSH_VERSION/functions), so this needs no plugin — it
+# stays within the no-framework rule. Bound only in operator-pending (viopp,
+# used after c/d/y) and visual (after v) keymaps, so the rest of vi mode is
+# untouched. select-word-match reads the typed i/a to pick inner-vs-around.
+autoload -Uz select-bracketed select-quoted select-word-match
+zle -N select-bracketed
+zle -N select-quoted
+zle -N select-word-match
+for km in viopp visual; do
+  for c in {a,i}${(s..)^:-'()[]{}<>bB'}; do   # (), [], {}, <>, and b/B aliases
+    bindkey -M $km -- "$c" select-bracketed
+  done
+  for c in {a,i}{\',\",\`}; do                # '', "", ``
+    bindkey -M $km -- "$c" select-quoted
+  done
+  for c in {a,i}{w,W}; do                      # iw/aw (word) and iW/aW (WORD)
+    bindkey -M $km -- "$c" select-word-match
+  done
+done
+unset km c
 # ----------------------------------------------------------------------------
 
 # --- Prompt & plugins -------------------------------------------------------
