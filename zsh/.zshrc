@@ -59,6 +59,24 @@ export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
 export DOCKER_CONFIG="$XDG_CONFIG_HOME/docker"
 # ----------------------------------------------------------------------------
 
+# --- CocoaPods --------------------------------------------------------------
+# CocoaPods stores its specs repos, cache and templates in ~/.cocoapods by
+# default. CP_HOME_DIR relocates that whole tree (source: lib/cocoapods/
+# config.rb -> ENV['CP_HOME_DIR']); granular CP_CACHE_DIR/CP_REPOS_DIR also
+# exist. It's data-like, so it lives under XDG_DATA_HOME. Existing dir moved
+# here so nothing re-downloads.
+export CP_HOME_DIR="$XDG_DATA_HOME/cocoapods"
+# ----------------------------------------------------------------------------
+
+# --- GitHub Copilot CLI -----------------------------------------------------
+# Copilot CLI defaults its config/auth to ~/.copilot. COPILOT_HOME replaces the
+# whole path; we set it explicitly because its automatic XDG_CONFIG_HOME support
+# is buggy (creates a dot-prefixed $XDG_CONFIG_HOME/.copilot — github/copilot-cli
+# issue #1750). COPILOT_CACHE_HOME splits ephemeral cache out of the config dir.
+export COPILOT_HOME="$XDG_CONFIG_HOME/copilot"
+export COPILOT_CACHE_HOME="$XDG_CACHE_HOME/copilot"
+# ----------------------------------------------------------------------------
+
 # --- Atuin ------------------------------------------------------------------
 # atuin defaults its log output to ~/.atuin/logs (outside XDG). ATUIN_LOG_DIR
 # redirects logs to XDG_STATE_HOME, keeping $HOME clean. The main config and

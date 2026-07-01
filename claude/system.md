@@ -32,17 +32,28 @@ to be run. (This file is shared by both Claude profiles and lives in the dotfile
 - `~/work/<context>/` — ALL projects, one folder per context:
   - `~/work/personal/` — personal projects (uses the personal git identity, the default).
   - `~/work/reckit/`   — reckit/company projects (uses the reckit identity override).
+  - `~/work/noon/`     — noon/company projects (uses the noon identity override).
   - future companies → `~/work/<company>/`.
 - Temp/scratch goes in a tmp dir, never in `~` or `~/.config`.
-- **Tools that ignore XDG by default** (npm, pub/Dart, Docker CLI) are pinned to
-  XDG dirs via env vars in `~/.config/zsh/.zshrc` (`npm_config_cache`,
-  `NPM_CONFIG_USERCONFIG`, `PUB_CACHE`, `DOCKER_CONFIG`); macOS shell-session save
+- **Tools that ignore XDG by default** (npm, pub/Dart, Docker CLI, CocoaPods,
+  Copilot CLI) are pinned to XDG dirs via env vars in `~/.config/zsh/.zshrc`
+  (`npm_config_cache`, `NPM_CONFIG_USERCONFIG`, `PUB_CACHE`, `DOCKER_CONFIG`,
+  `CP_HOME_DIR`, `COPILOT_HOME`, `COPILOT_CACHE_HOME`); macOS shell-session save
   is off via `SHELL_SESSIONS_DISABLE=1` in `.zprofile`. See those files' comments.
 - **Exception — Dart SDK**: `~/.dartServer`, `~/.dart-tool`, `~/.flutter`, and
   `~/.flutter-devtools` remain in `$HOME`; the Dart SDK hardcodes these paths and
   ignores any env override. Do not delete them.
 - **Exception — OpenAI Codex CLI**: `~/.codex` remains in `$HOME`; the Codex CLI
   hardcodes this path with no XDG override. Kept intentionally.
+- **Exception — Expo**: `~/.expo` remains in `$HOME` (Expo Go app cache + state);
+  Expo CLI has no relocation env var (upstream XDG request expo-cli#2274 is open,
+  unimplemented). Small; revisit if that lands.
+- **Exception — SwiftPM**: `~/.swiftpm` remains in `$HOME` (registry config +
+  security fingerprints). SwiftPM exposes only per-invocation `--config-path`/
+  `--cache-path`/`--security-path` flags, no global env var (upstream XDG request
+  swift-package-manager#6204 is open). Typically empty on this machine since RN
+  iOS deps go through CocoaPods; the large SPM cache already lives under
+  `~/Library/Caches/org.swift.swiftpm`.
 
 ## 3. Tools — prefer these (they are installed)
 `rg` over grep, `fd` over find, `eza` over ls, `bat` over cat, plus `fzf`, `zoxide`
