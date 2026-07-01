@@ -20,6 +20,11 @@ to be run. (This file is shared by both Claude profiles and lives in the dotfile
 
 ## 1. Containment philosophy
 - **Binaries**: only via Homebrew → `/opt/homebrew`. No random scripts/`.pkg`s.
+  **Exception — Claude Code CLI itself**: installed via Anthropic's native
+  installer, self-managed under `~/.local/share/claude/versions/` (symlinked
+  from `~/.local/bin/claude`), not a Homebrew formula/cask. It self-updates;
+  leave that mechanism alone (do not `brew install claude-code`, which would
+  create a second, conflicting install).
 - **Configs**: under `~/.config` (XDG). `$HOME` stays clean.
 - **Language runtimes**: only via **mise**, per-project. Never `brew install` a
   language for project use; never rely on system python/node.

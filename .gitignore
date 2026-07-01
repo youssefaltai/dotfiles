@@ -22,6 +22,12 @@ zsh/.zsh_sessions/
 !git/
 !git/**
 
+# mise global tool versions (no secrets; per-project [env] overrides live in
+# mise.toml files under ~/work/<company>/, which are NOT part of this repo)
+!mise/
+!mise/**
+mise/.mise.toml
+
 # neovim (config only; plugins live under ~/.local/share/nvim, not here)
 !nvim/
 !nvim/**
@@ -34,7 +40,7 @@ zsh/.zsh_sessions/
 !ghostty/**
 !starship.toml
 
-# tmux (config only; XDG location, read automatically by tmux 3.1+)
+# tmux (config only; XDG location, read automatically by tmux 3.2+)
 !tmux/
 !tmux/**
 

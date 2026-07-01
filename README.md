@@ -23,6 +23,11 @@ The operating philosophy — containment, where things go, git identities, the
 xcode-select --install
 ```
 
+Claude Code itself is **not** installed by `install.sh` (it isn't Homebrew-managed
+on this machine — see the exception in `system.md` §1). If you're not already
+running Claude Code to do this reproduction, install it per Anthropic's current
+docs (docs.claude.com) before continuing; it self-updates afterward.
+
 ### 1. Clone this repo into `~/.config`
 
 `~/.config` must not already exist (a fresh Mac won't have it). Clone over HTTPS
