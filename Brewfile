@@ -5,6 +5,8 @@ brew "atuin"
 brew "bat"
 # Yet another cross-platform graphical process/system monitor
 brew "bottom"
+# Dependency manager for Cocoa projects
+brew "cocoapods"
 # Container runtimes on MacOS (and Linux) with minimal setup
 brew "colima"
 # Pack, ship and run any application as a lightweight container
