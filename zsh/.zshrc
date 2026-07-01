@@ -163,8 +163,8 @@ unset km c
 # ----------------------------------------------------------------------------
 
 # --- Prompt & plugins -------------------------------------------------------
-# Starship: fast Rust prompt, single-file config (~/.config/starship.toml when
-# we add one; the default is already clean, so nothing to configure yet).
+# Starship: fast Rust prompt, single-file config at ~/.config/starship.toml
+# (colored arrow, compact directory, git branch, slow-command duration).
 eval "$(starship init zsh)"
 
 # zsh-autosuggestions: ghost-text suggestion from history; press -> to accept.

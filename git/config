@@ -1,6 +1,7 @@
 # Personal Git config (XDG location: ~/.config/git/config)
-# Base identity = personal. Repos under ~/work/reckit/ override to the reckit
-# identity via the includeIf at the bottom of this file.
+# Base identity = personal. Repos under ~/work/reckit/ and ~/work/noon/ override
+# to their respective company identities via the includeIf blocks at the
+# bottom of this file.
 
 [user]
 	name = Youssef
@@ -49,7 +50,8 @@
 	line-numbers = true
 
 # --- Per-company identity overrides ----------------------------------------
-# Any repo whose path is under ~/work/reckit/ uses the reckit identity.
+# Any repo whose path is under ~/work/reckit/ uses the reckit identity, and
+# under ~/work/noon/ uses the noon identity.
 # Add more [includeIf "gitdir:~/work/<company>/"] blocks later as needed.
 [includeIf "gitdir:~/work/reckit/"]
 	path = config-reckit
