@@ -31,7 +31,7 @@ to be run. (This file is shared by both Claude profiles and lives in the dotfile
 
 ## 2. Where things go
 - `~/.config/<tool>/` — every tool config (git, nvim, ghostty, starship, mise,
-  atuin, claude, zsh).
+  atuin, tmux, claude, zsh).
 - `~/.config/zsh/.zshrc` + `.zprofile` — shell config (relocated via ZDOTDIR;
   `~/.zshenv` is the only home dotfile).
 - `~/work/<context>/` — ALL projects, one folder per context:

@@ -47,3 +47,8 @@ mise/.mise.toml
 # claude (system manual, bootstrap script, guard hook, statusline, maintenance agent)
 !claude/
 !claude/**
+
+# atuin (shell history sync; config only — encryption key + session token live
+# under ~/.local/share/atuin/, not here)
+!atuin/
+!atuin/**
