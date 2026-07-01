@@ -7,6 +7,10 @@
 !.gitignore
 !Brewfile
 
+# reproduce-on-a-new-Mac runbook + installer
+!README.md
+!install.sh
+
 # zsh (relocated here via ZDOTDIR)
 !zsh/
 !zsh/**
