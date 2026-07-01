@@ -53,3 +53,5 @@
 # Add more [includeIf "gitdir:~/work/<company>/"] blocks later as needed.
 [includeIf "gitdir:~/work/reckit/"]
 	path = config-reckit
+[includeIf "gitdir:~/work/noon/"]
+	path = config-noon

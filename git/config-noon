@@ -1,0 +1,5 @@
+# Noon (company) identity — applied only to repos under ~/work/noon/.
+# Only the differences from the personal base; name stays "Youssef".
+[user]
+	email = yaltai@noon.com
+	signingkey = ~/.ssh/id_ed25519_noon.pub

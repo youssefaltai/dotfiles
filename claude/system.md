@@ -65,8 +65,18 @@ to be run. (This file is shared by both Claude profiles and lives in the dotfile
   `youssef-goreckit`, SSH host alias **`github-reckit`** (clone as
   `git@github-reckit:youssef-goreckit/<repo>.git`), gh via
   `GH_CONFIG_DIR=~/.config/gh-reckit`.
-- Identity switches automatically via `includeIf gitdir:~/work/reckit/`. Commits are
-  SSH-signed; default branch `main`.
+- **Noon** (under `~/work/noon/`): `yaltai@noon.com`, GitHub `youssefaltai-noon`,
+  SSH host alias **`github-noon`** (clone as
+  `git@github-noon:youssefaltai-noon/<repo>.git`), gh via
+  `GH_CONFIG_DIR=~/.config/gh-noon`. Signed by `id_ed25519_noon`. Uses the DEFAULT
+  personal Claude profile (no `CLAUDE_CONFIG_DIR`) and base nvim (React Native, no
+  Flutter layer).
+- Identity switches automatically via `includeIf gitdir:~/work/<company>/`. Commits
+  are SSH-signed; default branch `main`.
+- **Per-profile SSH key** (`id_ed25519_<company>`, used for both auth and signing):
+  add `AddKeysToAgent yes` + `UseKeychain yes` to its `Host github-<company>` block
+  and run `ssh-add --apple-use-keychain ~/.ssh/id_ed25519_<company>` once, so the
+  passphrase is served from the macOS login keychain and never re-prompted.
 
 ## 6. Per-project environment (mise)
 - Projects declare runtimes/env in a `mise.toml`: `mise use node@22`, etc.
