@@ -48,6 +48,17 @@ mise/.mise.toml
 !claude/
 !claude/**
 
+# opencode (primary agent: operating manual, config, guard plugin, agents, skills)
+# node_modules + package files are runtime state managed by opencode itself
+# (plugin SDK types); they are regenerated, not tracked.
+!opencode/
+!opencode/**
+opencode/node_modules/
+opencode/package.json
+opencode/package-lock.json
+opencode/bun.lock
+opencode/.gitignore
+
 # atuin (shell history sync; config only — encryption key + session token live
 # under ~/.local/share/atuin/, not here)
 !atuin/

@@ -1,5 +1,13 @@
 # This machine — operating manual for Claude Code
 
+> **TRANSITION (2026-07-04):** OpenCode + OpenRouter is now this machine's
+> primary agent and system maintainer (`~/.config/opencode/AGENTS.md` is the
+> authoritative manual). Claude Code remains for the reckit (company) profile
+> permanently, and for the personal profile only until the subscription ends
+> (~2026-07-10) — after that, OpenCode's `finalize-claude-migration` skill
+> completes the cutover. Until then this file keeps serving both Claude
+> profiles unchanged.
+
 You operate **Youssef's macOS machine**. It is intentionally clean, contained, and
 reproducible. Follow these conventions exactly — they are how the system is meant
 to be run. (This file is shared by both Claude profiles and lives in the dotfiles repo.)

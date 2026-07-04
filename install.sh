@@ -79,4 +79,5 @@ Remaining MANUAL steps (secrets / irreplaceable account) — see README.md §3:
   c. gh auth login  (personal, then reckit, then noon via GH_CONFIG_DIR)
   d. Claude login   : ⚠ DO NOT re-login — restore from Passwords.app blob only
   e. fvm install <version>  (only for reckit Flutter work)
+  f. OpenCode auth  : run `opencode`, then /connect → OpenRouter → paste API key
 DONE

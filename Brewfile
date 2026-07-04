@@ -1,4 +1,7 @@
-tap "leoafarias/fvm"
+tap "anomalyco/tap"
+tap "leoafarias/fvm", trusted: true
+# AI pair programming in your terminal
+brew "aider"
 # Improved shell history for zsh, bash, fish and nushell
 brew "atuin"
 # Clone of cat(1) with syntax highlighting and Git integration
@@ -21,6 +24,8 @@ brew "fd"
 brew "fvm"
 # Command-line fuzzy finder written in Go
 brew "fzf"
+# Interact with Google Gemini AI models from the command-line
+brew "gemini-cli"
 # GitHub command-line tool
 brew "gh"
 # Syntax-highlighting pager for git and diff output
@@ -49,6 +54,8 @@ brew "zoxide"
 brew "zsh-autosuggestions"
 # Fish shell like syntax highlighting for zsh
 brew "zsh-syntax-highlighting"
+# The AI coding agent built for the terminal.
+brew "anomalyco/tap/opencode", trusted: true
 # OpenAI's coding agent that runs in your terminal
 cask "codex"
 # Brings the power of Copilot coding agent directly to your terminal
@@ -62,5 +69,9 @@ cask "font-jetbrains-mono-nerd-font"
 cask "ghostty"
 # Web browser
 cask "google-chrome"
+# Software for Logitech devices
+cask "logi-options+"
 # Team communication and collaboration software
 cask "slack"
+# Mesh VPN based on WireGuard
+cask "tailscale-app"

@@ -5,8 +5,11 @@ Private, XDG-based configuration for Youssef's macOS machine. This repo **is**
 
 The operating philosophy — containment, where things go, git identities, the
 `mise` per-project model, and the safety rules — lives in
-[`claude/system.md`](claude/system.md). Read it first; this README only covers
-**reproducing the setup on a fresh Mac**.
+[`opencode/AGENTS.md`](opencode/AGENTS.md), the manual for OpenCode (the
+primary agent and system maintainer on this machine). The Claude Code profiles
+still read their own copy at [`claude/system.md`](claude/system.md) until the
+migration is finalized. Read `opencode/AGENTS.md` first; this README only
+covers **reproducing the setup on a fresh Mac**.
 
 ---
 
@@ -134,6 +137,13 @@ Managed by `fvm` (installed via the Brewfile's `leoafarias/fvm` tap), not mise:
 ```sh
 fvm install <version>   # per project, as needed
 ```
+
+#### f. OpenCode auth (OpenRouter)
+
+The binary comes from the Brewfile; its config (`opencode/`) is this repo. Only
+the API key is manual: run `opencode`, then `/connect` → **OpenRouter** → paste
+a key from [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys).
+Stored in `~/.local/share/opencode/auth.json` (never tracked here).
 
 ### 4. Directory layout to recreate
 

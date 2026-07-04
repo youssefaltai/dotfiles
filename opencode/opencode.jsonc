@@ -1,0 +1,90 @@
+{
+  // OpenCode global config — schema-validated (opencode refuses to start on
+  // invalid fields). Loaded once at startup; restart opencode after editing.
+  // Companion files in this dir: AGENTS.md (operating manual, auto-loaded),
+  // plugins/guard.ts (bash guardrails), agent/, skill/.
+  "$schema": "https://opencode.ai/config.json",
+
+  // --- Models (all via OpenRouter; auth in ~/.local/share/opencode/auth.json) ---
+  // Main model for sessions. small_model handles cheap internal tasks
+  // (session titles, summaries) so they don't burn main-model tokens.
+  "model": "openrouter/~anthropic/claude-fable-latest",
+  "small_model": "openrouter/openai/gpt-5-nano",
+
+  // --- Permissions ------------------------------------------------------------
+  // Ported from the Claude Code personal profile's settings.json (allow/deny).
+  // NOTE: within each tool's pattern map, the LAST matching rule wins — broad
+  // rules first, narrow overrides after.
+  "permission": {
+    "read": {
+      "*": "allow",
+      // secrets — never readable by the agent
+      "~/.ssh/**": "deny",
+      "~/.config/gh/**": "deny",
+      "~/.config/gh-reckit/**": "deny",
+      "~/.config/gh-noon/**": "deny",
+      "**/.env": "deny",
+      "**/.env.*": "deny",
+      "~/.local/share/opencode/auth.json": "deny"
+    },
+    "edit": {
+      "*": "allow",
+      "~/.ssh/**": "deny",
+      "~/.local/share/opencode/auth.json": "deny",
+      // guardrail files: agent-editable never; the user edits these manually
+      "~/.config/opencode/plugins/**": "deny",
+      "~/.config/claude/hooks/**": "deny",
+      "~/.claude/settings.json": "deny",
+      "~/.claude-reckit/settings.json": "deny"
+    },
+    "bash": {
+      "*": "ask",
+      // everyday tools — same allow-list the Claude personal profile had
+      "git *": "allow",
+      "gh *": "allow",
+      "brew *": "allow",
+      "mise *": "allow",
+      "ls *": "allow",
+      "eza *": "allow",
+      "cat *": "allow",
+      "bat *": "allow",
+      "rg *": "allow",
+      "fd *": "allow",
+      "fzf *": "allow",
+      "jq *": "allow",
+      "zoxide *": "allow",
+      "delta *": "allow",
+      "lazygit *": "allow",
+      "echo *": "allow",
+      "pwd": "allow",
+      "which *": "allow",
+      "head *": "allow",
+      "tail *": "allow",
+      "wc *": "allow",
+      "grep *": "allow",
+      "find *": "allow",
+      "mkdir *": "allow",
+      "touch *": "allow",
+      "cp *": "allow",
+      "node *": "allow",
+      "npm *": "allow",
+      "npx *": "allow",
+      "pnpm *": "allow",
+      "python3 *": "allow",
+      "uv *": "allow",
+      "make *": "allow",
+      // hard denies (guard.ts additionally blocks obfuscated variants)
+      "security *": "deny",
+      "claude auth *": "deny"
+    },
+    "webfetch": "allow",
+    "websearch": "allow",
+    // system maintenance regularly works across ~/.config and ~/work from any
+    // cwd; everything else outside the project dir still asks.
+    "external_directory": {
+      "*": "ask",
+      "~/.config/**": "allow",
+      "~/work/**": "allow"
+    }
+  }
+}
