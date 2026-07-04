@@ -36,7 +36,7 @@ repo at `~/.config/opencode/AGENTS.md` and is loaded into every session.)
 ## 1. Containment philosophy
 
 - **Binaries**: only via Homebrew → `/opt/homebrew`. No random scripts/`.pkg`s.
-  OpenCode itself is brew-managed (`brew "opencode"` in the Brewfile).
+  OpenCode itself is brew-managed (`brew "anomalyco/tap/opencode"` in the Brewfile).
   **Exception — Claude Code CLI**: installed via Anthropic's native installer,
   self-managed under `~/.local/share/claude/versions/` (symlinked from
   `~/.local/bin/claude`). It stays for the reckit (company) profile; leave its
