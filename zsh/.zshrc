@@ -59,6 +59,12 @@ export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
 export DOCKER_CONFIG="$XDG_CONFIG_HOME/docker"
 # ----------------------------------------------------------------------------
 
+# --- Context7 ----------------------------------------------------------------
+# Free API key for context7.com — up-to-date library docs for LLMs.
+# Key stored in opencode's data dir (not in dotfiles).
+export CONTEXT7_API_KEY="$(< "$HOME/.local/share/opencode/context7_key")"
+# ----------------------------------------------------------------------------
+
 # --- CocoaPods --------------------------------------------------------------
 # CocoaPods stores its specs repos, cache and templates in ~/.cocoapods by
 # default. CP_HOME_DIR relocates that whole tree (source: lib/cocoapods/
@@ -109,6 +115,12 @@ export VISUAL="nvim"
 # NOTE: CLAUDE_CONFIG_DIR is real but UNDOCUMENTED/unsupported (issue #33430).
 alias claude-personal='env -u CLAUDE_CONFIG_DIR claude'
 alias claude-reckit='CLAUDE_CONFIG_DIR="$HOME/.claude-reckit" claude'
+# ----------------------------------------------------------------------------
+
+# --- OpenCode -----------------------------------------------------------------
+# Prevent OpenCode from scanning Claude Code fallback locations (skills, etc.),
+# keeping it fully independent.
+export OPENCODE_DISABLE_CLAUDE_CODE=1
 # ----------------------------------------------------------------------------
 
 # --- mise: runtimes, env vars, tasks (per-project) --------------------------
@@ -192,3 +204,4 @@ source "$(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
 # MUST be sourced LAST — it wraps every other line-editor widget.
 source "$(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 # ----------------------------------------------------------------------------
+

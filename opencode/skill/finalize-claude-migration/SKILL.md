@@ -30,20 +30,19 @@ This runbook completes the migration that started on 2026-07-04. End state:
    **"Claude Code old account credentials"**. These stay as harmless relics —
    the account may still be recoverable and the reckit login must keep working.
 
-## 1. Rewire OpenCode's skills FIRST (before archiving ~/.claude)
+## 1. Confirm OpenCode's skills are self-contained (no ~/.claude dependency)
 
-OpenCode currently auto-loads skills via the `~/.claude/skills/` fallback
-(symlinks → `~/.config/claude/skills/`). Archiving `~/.claude` would silently
-drop them, so repoint first:
+Since 2026-07-05 OpenCode has no skill dependency on `~/.claude`: its skills
+are real files under `~/.config/opencode/skill/` (user-triggered wrappers live
+as commands in `~/.config/opencode/command/`), `~/.claude/skills/` no longer
+exists, and `OPENCODE_DISABLE_CLAUDE_CODE=1` (exported in
+`~/.config/zsh/.zshrc`) stops OpenCode scanning Claude fallback locations
+anyway. Nothing to rewire — just confirm with `opencode debug skill` that
+every skill resolves from `~/.config/opencode/skill/`.
 
-1. In `~/.config/opencode/opencode.jsonc` add:
-   ```jsonc
-   "skills": { "paths": ["../claude/skills"] }
-   ```
-   (relative to the declaring config → `~/.config/claude/skills`, the single
-   source of truth shared with reckit's Claude profile).
-2. Restart opencode and confirm `grill-me` + `grilling` still appear as
-   available skills, with paths under `~/.config/claude/skills/`.
+(The reckit Claude profile keeps its own Claude-idiom copies of
+grill-me/grilling under `~/.config/claude/skills/` — intentionally separate;
+archiving `~/.claude` does not affect them.)
 
 ## 2. Confine Claude Code to reckit
 
@@ -119,8 +118,9 @@ Note honestly: this is a guardrail against drift/accidents, not a sandbox.
    about Keychain/profiles pointing at the personal account).
 3. Leave `~/.local/share/claude/` + `~/.local/bin/claude` alone — the CLI
    binary itself stays (reckit uses it; it self-updates).
-4. Set `export OPENCODE_DISABLE_CLAUDE_CODE=1` in `~/.config/zsh/.zshrc`
-   (OpenCode section) so OpenCode stops scanning Claude fallback locations.
+4. Confirm `export OPENCODE_DISABLE_CLAUDE_CODE=1` is still set in
+   `~/.config/zsh/.zshrc` (OpenCode section; added 2026-07-05) so OpenCode
+   does not scan Claude fallback locations.
 
 ## 4. Simplify the shared Claude wiring in dotfiles
 
