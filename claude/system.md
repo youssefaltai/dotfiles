@@ -67,6 +67,17 @@ to be run. (This file is shared by both Claude profiles and lives in the dotfile
   swift-package-manager#6204 is open). Typically empty on this machine since RN
   iOS deps go through CocoaPods; the large SPM cache already lives under
   `~/Library/Caches/org.swift.swiftpm`.
+- **Exception — Android toolchain** (added 2026-07-06): `~/Android/Sdk` holds the
+  full Android SDK (platform-tools, platforms, build-tools, ndk, emulator, system
+  images) — the Android Studio default location; `avdmanager`/`sdkmanager` fought
+  a custom `--sdk_root`, so it was left there rather than relocated. Referenced by
+  `sdk.dir` in RN Android projects' `android/local.properties` (e.g.
+  `~/work/noon/bappzaar/android/local.properties`). `~/.android` and
+  `~/.config/.android` hold the AVD (`pixel8`) and adb keys — tool defaults, one
+  of them not actually XDG-relocated. `~/.local/share/gradle` is the intended
+  `GRADLE_USER_HOME`, but that env var is **not yet exported** in
+  `~/.config/zsh/.zshrc` (pending Youssef's own edit) — until then Gradle may
+  fall back to `~/.gradle` on a fresh shell.
 
 ## 3. Tools — prefer these (they are installed)
 `rg` over grep, `fd` over find, `eza` over ls, `bat` over cat, plus `fzf`, `zoxide`

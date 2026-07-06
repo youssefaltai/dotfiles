@@ -67,6 +67,14 @@ repo at `~/.config/opencode/AGENTS.md` and is loaded into every session.)
   `~/.codex` (Codex CLI), `~/.expo` (Expo), `~/.swiftpm` (SwiftPM),
   `~/.claude` + `~/.claude-reckit` (Claude Code profile dirs; see §0),
   `~/.local/share/opencode` (OpenCode data: auth, db, logs).
+- **Exception — Android toolchain** (added 2026-07-06): `~/Android/Sdk` is the
+  full Android SDK (Android Studio's default `--sdk_root`, kept there after
+  `avdmanager`/`sdkmanager` fought a custom path); referenced by `sdk.dir` in RN
+  Android projects' `android/local.properties`. `~/.android` and
+  `~/.config/.android` hold the AVD (`pixel8`) and adb keys (tool defaults).
+  `~/.local/share/gradle` is the intended `GRADLE_USER_HOME`, but that env var
+  is **not yet exported** in `~/.config/zsh/.zshrc` (pending Youssef's own
+  edit) — until then Gradle falls back to `~/.gradle`.
 
 ## 3. Tools — prefer these (they are installed)
 
