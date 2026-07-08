@@ -28,10 +28,12 @@ repo at `~/.config/opencode/AGENTS.md` and is loaded into every session.)
   (`~/.config/gh*`), any `.env`.
 - **Confirm before outward-facing or irreversible actions**: pushing, publishing,
   force-pushing, deleting repos/files you didn't create, renaming remote repos.
-- Config self-modification: you may edit `~/.config/opencode/opencode.jsonc` via
-  the Edit tool when asked, but **propose permission/guard changes explicitly and
-  get confirmation first**. The guard plugin (`~/.config/opencode/plugins/`) is
-  edit-protected — the user changes it manually.
+- Config self-modification: you may edit the OpenCode config (`opencode.jsonc`,
+  `agent/`, `command/`, `skill/`, and plugins under `plugins/`) via the Edit
+  tool when asked, but **propose permission/guard changes explicitly and get
+  confirmation first**. The one exception is the guard plugin itself
+  (`~/.config/opencode/plugins/guard.ts`): it is edit-protected and only the
+  user changes it, so no single agent action can defang the guardrails.
 
 ## 1. Containment philosophy
 
@@ -160,3 +162,50 @@ repo at `~/.config/opencode/AGENTS.md` and is loaded into every session.)
 - Keep documentation truthful: README, this file, config comments — fact-check
   claims against the real system state and fix drift (the `system-maintainer`
   agent does this on request).
+
+## 10. Memory — persist what you learn across sessions
+
+You have a persistent file-based memory at `~/.config/opencode/memory/`. The
+index (`memory/MEMORY.md`) is auto-loaded into every session via the
+`instructions` field in `opencode.jsonc`; the memories themselves are read on
+demand — when an index line looks relevant to the task at hand, Read that file
+before acting.
+
+Each memory is one file holding one fact, with frontmatter:
+
+```markdown
+---
+name: <short-kebab-case-slug>
+description: <one-line summary — used to decide relevance from the index>
+metadata:
+  type: user | feedback | project | reference
+---
+
+<the fact; for feedback/project, follow with **Why:** and **How to apply:**
+lines. Link related memories with [[their-name]].>
+```
+
+- **Types**: `user` — who Youssef is (role, expertise, preferences).
+  `feedback` — guidance he has given on how to work, both corrections and
+  confirmed approaches; include the why. `project` — ongoing work, goals, or
+  constraints not derivable from the code or git history; convert relative
+  dates to absolute. `reference` — pointers to external resources (URLs,
+  dashboards, tickets).
+- **When to save**: after user corrections, non-obvious hard-won findings
+  (gotchas, verified workarounds), and decisions with lasting scope. Don't
+  save what a repo already records (code structure, git history, its own
+  AGENTS.md/docs) or what only matters to the current conversation.
+- **The store is global** (one dir for all projects): project-scoped memories
+  start their body with a `Scope: ~/work/...` line and get grouped under that
+  project's heading in the index.
+- **After writing a file**, add a one-line pointer in `MEMORY.md`
+  (`- [Title](file.md) — hook`). The index stays one line per memory — never
+  put memory content there.
+- **Before saving**, check the index for an existing file that already covers
+  it — update that file rather than creating a duplicate; delete memories
+  that turn out to be wrong. Stale memories are worse than none: when a
+  recalled memory contradicts observed reality, trust reality and fix the
+  memory.
+- `memory/` is deliberately **not tracked** in the dotfiles repo (runtime
+  state, may contain company-work details) — don't commit it or "fix" its
+  gitignore entry.

@@ -9,7 +9,8 @@
 //
 // Loaded automatically from ~/.config/opencode/plugins/ at startup (no config
 // entry needed). This file is edit-protected via permission rules — the user
-// maintains it manually.
+// maintains it manually. Other plugins in this directory and the rest of the
+// OpenCode config are agent-editable (policy change 2026-07-05).
 
 import type { Plugin } from "@opencode-ai/plugin"
 
@@ -44,13 +45,18 @@ const RULES: Array<{ pattern: RegExp; reason: string }> = [
     pattern: /rm\s+(-[A-Za-z]+\s+)*(\/|~|~\/|\$HOME|\$HOME\/|\/\*)(\s|$)/,
     reason: "Catastrophic rm targeting home/root is forbidden.",
   },
-  // 6. Protect the guardrail files themselves from shell rewrites (the Edit
-  //    tool is blocked by permission rules; this closes the Bash path).
+  // 6. Protect the guardrail core from shell rewrites: this file, OpenCode's
+  //    auth.json, and Claude's settings/hooks (the Edit tool is blocked for
+  //    these by permission rules; this closes the Bash path). Other plugins
+  //    and opencode.jsonc are deliberately NOT listed — agents may edit them.
+  //    The redirect/verb must lead directly to the guarded path within the
+  //    same shell segment, so unrelated redirects (e.g. `2>/dev/null`) in a
+  //    command that merely mentions a guarded path don't false-positive.
   {
     pattern:
-      /(>|>>|(^|\s)(tee|cp|mv|ln)\s).*(\.config\/opencode\/(plugins\/|opencode\.jsonc?)|\.local\/share\/opencode\/auth\.json|\.claude(-reckit)?\/settings\.json|\.config\/claude\/(hooks\/|statusline\.sh))/i,
+      /(>>?\s*|(^|\s)(tee|cp|mv|ln)\s[^;&|\n]*)\S*(\.config\/opencode\/plugins\/guard\.ts|\.local\/share\/opencode\/auth\.json|\.claude(-reckit)?\/settings\.json|\.config\/claude\/(hooks\/|statusline\.sh))/i,
     reason:
-      "Modifying OpenCode/Claude guardrail files via the shell is blocked (edit manually if you must).",
+      "Modifying OpenCode/Claude guardrail core files via the shell is blocked (edit manually if you must).",
   },
 ]
 

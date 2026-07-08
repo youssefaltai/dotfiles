@@ -51,8 +51,11 @@ mise/.mise.toml
 # opencode (primary agent: operating manual, config, guard plugin, agents, skills)
 # node_modules + package files are runtime state managed by opencode itself
 # (plugin SDK types); they are regenerated, not tracked.
+# memory/ is persistent agent memory — local runtime state, may contain
+# company-work details; deliberately kept out of this personal repo.
 !opencode/
 !opencode/**
+opencode/memory/
 opencode/node_modules/
 opencode/package.json
 opencode/package-lock.json

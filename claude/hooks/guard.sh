@@ -38,8 +38,10 @@ match 'rm[[:space:]]+(-[A-Za-z]+[[:space:]]+)*(/|~|~/|\$HOME|\$HOME/|/\*)([[:spa
 
 # 6. Protect the guardrail files themselves from being rewritten via the shell
 #    (the Edit/Write tools are blocked by deny rules; this closes the Bash path).
-#    Verb may be at start-of-line OR preceded by whitespace.
-match '(>|>>|(^|[[:space:]])(tee|cp|mv|ln)[[:space:]]).*(\.claude(-reckit)?/settings\.json|\.config/claude/(hooks/|statusline\.sh))' \
+#    The redirect/verb must lead directly to the guarded path within the same
+#    shell segment, so unrelated redirects (e.g. `2>/dev/null`) in a command
+#    that merely mentions a guarded path don't false-positive.
+match '(>>?[[:space:]]*|(^|[[:space:]])(tee|cp|mv|ln)[[:space:]][^;&|]*)[^[:space:]]*(\.claude(-reckit)?/settings\.json|\.config/claude/(hooks/|statusline\.sh))' \
   && deny "Modifying Claude's own settings/guard via the shell is blocked (edit manually if you must)."
 
 exit 0

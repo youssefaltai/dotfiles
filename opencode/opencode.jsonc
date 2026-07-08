@@ -2,14 +2,21 @@
   // OpenCode global config — schema-validated (opencode refuses to start on
   // invalid fields). Loaded once at startup; restart opencode after editing.
   // Companion files in this dir: AGENTS.md (operating manual, auto-loaded),
-  // plugins/guard.ts (bash guardrails), agent/, skill/.
+  // plugins/guard.ts (bash guardrails), agent/, skill/, memory/ (persistent
+  // memory; index auto-loaded via "instructions" below).
   "$schema": "https://opencode.ai/config.json",
 
-  // --- Models (all via OpenRouter; auth in ~/.local/share/opencode/auth.json) ---
+  // --- Persistent memory --------------------------------------------------
+  // Loads the memory INDEX into every session (combined with AGENTS.md);
+  // individual memories under memory/ are read on demand. Relative paths
+  // resolve against this config's directory. Protocol: AGENTS.md §10.
+  "instructions": ["memory/MEMORY.md"],
+
+  // --- Models (DeepSeek direct API; auth in ~/.local/share/opencode/auth.json) ---
   // Main model for sessions. small_model handles cheap internal tasks
   // (session titles, summaries) so they don't burn main-model tokens.
-  "model": "openrouter/deepseek/deepseek-v4-pro",
-  "small_model": "openrouter/deepseek/deepseek-v4-flash",
+  "model": "deepseek/deepseek-v4-pro",
+  "small_model": "deepseek/deepseek-v4-flash",
 
   // Updates come via Homebrew only (brew upgrade regenerates the Brewfile);
   // just notify when a newer version exists instead of self-updating.
@@ -29,8 +36,17 @@
       "type": "local",
       "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
       "enabled": true
+    },
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "-y", "@playwright/mcp@latest", "--headless"],
+      "enabled": true
     }
   },
+
+  // --- LSP Servers ------------------------------------------------------------
+  "lsp": true,  // enable LSP support (for code completion, hover, etc.)
+
 
   // --- Permissions ------------------------------------------------------------
   // Ported from the Claude Code personal profile's settings.json (allow/deny).
@@ -56,8 +72,10 @@
       "*": "allow",
       "~/.ssh/**": "deny",
       "~/.local/share/opencode/auth.json": "deny",
-      // guardrail files: agent-editable never; the user edits these manually
-      "~/.config/opencode/plugins/**": "deny",
+      // guardrail core: guard.ts stays user-maintained (one step removed from
+      // agents so no single agent action can defang it); other plugins and the
+      // rest of the opencode config are agent-editable.
+      "~/.config/opencode/plugins/guard.ts": "deny",
       "~/.config/claude/hooks/**": "deny",
       "~/.claude/settings.json": "deny",
       "~/.claude-reckit/settings.json": "deny"
