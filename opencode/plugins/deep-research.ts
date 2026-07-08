@@ -21,10 +21,10 @@ import { tool } from "@opencode-ai/plugin"
 const VOTES_PER_CLAIM = 3 // votes for CENTRAL claims; lesser claims get 1 (see panel assignment)
 const MAX_FETCH = 15
 const HIGH_CARVEOUT_PER_ANGLE = 2 // high-relevance fetches allowed past the budget, per angle (searchers over-rate "high"; unlimited carve-out let a run fetch 25/15)
-const MAX_VERIFY_CLAIMS = 25
-const MAX_CENTRAL_PANELS = 8 // claims that get the full 3-voter panel; extractors rate ~everything "central", which made tiered voting dead code (25×3 = 75 verifier sessions)
+const MAX_VERIFY_CLAIMS = 15 // was 25; verify is the pro-model cost center and a report rarely surfaces >12 findings (2026-07-08 cost review)
+const MAX_CENTRAL_PANELS = 5 // was 8; claims that get the full 3-voter panel — extractors rate ~everything "central", so this cap (not merit) sets panel count; 5 panels covers the report's headline findings
 const MAX_CLAIMS_PER_SOURCE = 5 // one source can't flood the verify pool (original EXTRACT_SCHEMA maxItems)
-const CONCURRENCY = 8 // simultaneous subagent sessions (OpenRouter rate-limit guard)
+const CONCURRENCY = 8 // simultaneous subagent sessions (provider rate-limit guard)
 const JSON_RETRIES = 1 // re-prompts when a subagent returns malformed JSON
 
 // ─── Types ───
@@ -34,7 +34,13 @@ type Importance = "central" | "supporting" | "tangential"
 
 interface SearchResult { url: string; title: string; snippet?: string; relevance: Relevance }
 interface Claim { claim: string; quote: string; importance: Importance; sourceUrl: string; sourceQuality: SourceQuality }
-interface Verdict { refuted: boolean; evidence: string; confidence: "high" | "medium" | "low"; counterSource?: string }
+// `verdict` is the real three-way answer; `refuted` is the legacy boolean the
+// claim-verifier also emits (true for BOTH refuted and unverifiable — folding
+// those together corrupted reports until 2026-07-08). Tally on `verdict`,
+// falling back to the boolean only for old-style replies that omit it.
+interface Verdict { verdict?: "supported" | "refuted" | "unverifiable"; refuted: boolean; evidence: string; confidence: "high" | "medium" | "low"; counterSource?: string }
+const verdictOf = (v: Verdict): "supported" | "refuted" | "unverifiable" =>
+  v.verdict ?? (v.refuted ? "refuted" : "supported")
 
 const relRank: Record<Relevance, number> = { high: 0, medium: 1, low: 2 }
 const impRank: Record<Importance, number> = { central: 0, supporting: 1, tangential: 2 }
@@ -71,20 +77,24 @@ function normURL(u: string): string {
   }
 }
 
-function extractJSON(text: string): unknown | null {
+function extractJSONCandidates(text: string): unknown[] {
   // A reply may contain several fences (e.g. a quoted example before the real
-  // answer): try every fence, ```json-tagged ones first, then the brace span.
+  // answer): collect every parseable candidate, ```json-tagged fences first,
+  // then untagged, then the widest brace span. The CALLER picks the first one
+  // that passes schema validation — "first fence that merely parses" used to
+  // win over the real answer sitting later in the same message.
   const fences = [...text.matchAll(/```(json)?\s*([\s\S]*?)```/g)]
-  const candidates = [
+  const raw = [
     ...fences.filter((m) => m[1]).map((m) => m[2]),
     ...fences.filter((m) => !m[1]).map((m) => m[2]),
     text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1),
   ]
-  for (const c of candidates) {
+  const out: unknown[] = []
+  for (const c of raw) {
     if (!c) continue
-    try { return JSON.parse(c) } catch { /* try next */ }
+    try { out.push(JSON.parse(c)) } catch { /* skip unparseable */ }
   }
-  return null
+  return out
 }
 
 function semaphore(limit: number) {
@@ -117,6 +127,10 @@ export const DeepResearchPlugin: Plugin = async ({ client, directory }) => {
     return limit(async () => {
       try {
         if (opts.abort.aborted) return null // may have aborted while queued on the semaphore
+        // Child sessions are deliberately never deleted: they carry the
+        // subagent transcripts, which is the run's audit trail (inspectable in
+        // the TUI session tree). Deleting on completion would save disk, not
+        // tokens — transparency wins. Revisit if session clutter ever bites.
         const created = await client.session.create({
           body: { parentID: opts.parentID, title: opts.title },
           query: { directory },
@@ -138,17 +152,24 @@ export const DeepResearchPlugin: Plugin = async ({ client, directory }) => {
             signal: opts.abort,
           })
           const text = res.data.parts
-            .filter((p: any) => p.type === "text")
+            // `ignored` marks text superseded by a provider-level retry within
+            // the same message — including it put stale attempts ahead of the
+            // real reply.
+            .filter((p: any) => p.type === "text" && !p.ignored)
             .map((p: any) => p.text)
             .join("\n")
-          const parsed = extractJSON(text)
+          const candidates = extractJSONCandidates(text)
+          // Prefer the first candidate that passes schema validation; a
+          // merely-parseable earlier fence (quoted example, stale attempt)
+          // must not shadow the real answer later in the message.
+          const valid = candidates.find((c) => opts.validate(c))
+          if (valid !== undefined) return valid as T
           // An `error` field is the agent's honest-failure escape (missing
           // tool, all fetches failed, ...). Treat it as a failed subagent and
           // do NOT re-prompt: the retry nudge below demands JSON-only, and
           // 2026-07-08 showed that pressuring an agent that just said "I
           // can't do this" produces fabricated data, not compliance.
-          if (parsed !== null && typeof (parsed as any).error === "string" && (parsed as any).error) return null
-          if (parsed !== null && opts.validate(parsed)) return parsed
+          if (candidates.some((c: any) => c && typeof c.error === "string" && c.error)) return null
           prompt =
             "Your previous reply was not valid JSON in the required format. " +
             "Reply again with ONLY the fenced ```json block, exactly matching the format you were given. No prose. " +
@@ -178,7 +199,8 @@ export const DeepResearchPlugin: Plugin = async ({ client, directory }) => {
 
   const isVerdict = (v: any): v is Verdict =>
     v && typeof v.refuted === "boolean" && typeof v.evidence === "string" &&
-    Object.hasOwn(confRank, v.confidence ?? "")
+    Object.hasOwn(confRank, v.confidence ?? "") &&
+    (v.verdict === undefined || ["supported", "refuted", "unverifiable"].includes(v.verdict))
 
   const isReport = (v: any): v is {
     summary: string
@@ -328,6 +350,12 @@ export const DeepResearchPlugin: Plugin = async ({ client, directory }) => {
             }),
           )
 
+          // A user cancellation drains every in-flight subagent to null — which
+          // is indistinguishable from "everything failed" below. Check the
+          // signal at each barrier so cancellation never reads as a broken
+          // websearch tool.
+          if (abort.aborted) return "Deep research cancelled by user during the search/fetch phase. Partial work discarded."
+
           const allSources = perAngle.flat()
           const allClaims = allSources.flatMap((s) => s.claims)
           // Dedup near-identical claims from different sources BEFORE the
@@ -395,39 +423,64 @@ export const DeepResearchPlugin: Plugin = async ({ client, directory }) => {
                   ),
                 )
               ).filter((x): x is Verdict => x !== null)
-              const refuted = verdicts.filter((v) => v.refuted).length
-              const support = verdicts.length - refuted
-              // Three outcomes, not two: a majority refuting kills ON THE
-              // MERITS; a majority of valid, NON-REFUTING votes confirms
-              // (support, not mere vote count — a 1-1 split with a failed
-              // third voter is contested, not confirmed); anything else
-              // (errored/aborted verifiers) is an INFRA failure —
-              // "unverified", which must never read as refuted.
-              const status: "confirmed" | "refuted" | "unverified" =
-                refuted >= killAt ? "refuted" : support >= killAt ? "confirmed" : "unverified"
+              // Tally on the three-way verdict, NOT the legacy boolean: the
+              // claim-verifier sets refuted=true for both "refuted" and
+              // "unverifiable", and folding those together reported honest
+              // "no evidence either way" as "actively debunked".
+              const refuted = verdicts.filter((v) => verdictOf(v) === "refuted").length
+              const support = verdicts.filter((v) => verdictOf(v) === "supported").length
+              const unverifiable = verdicts.filter((v) => verdictOf(v) === "unverifiable").length
+              // Four outcomes: majority refuting kills ON THE MERITS; a
+              // majority of "supported" confirms (support, not mere vote
+              // count — a 1-1 split with a failed third voter is contested,
+              // not confirmed); majority "unverifiable" is its own honest
+              // bucket (no credible evidence either way); anything else
+              // (errored/aborted verifiers, splits) is "unverified" — an
+              // INFRA failure that must never read as refuted.
+              const status: "confirmed" | "refuted" | "unverifiable" | "unverified" =
+                refuted >= killAt ? "refuted"
+                : support >= killAt ? "confirmed"
+                : unverifiable >= killAt ? "unverifiable"
+                : "unverified"
               return { ...claim, verdicts, refutedVotes: refuted, status, votesAssigned: votes }
             }),
           )
+          if (abort.aborted) return "Deep research cancelled by user during the verify phase. Partial work discarded."
+
           const confirmed = voted.filter((c) => c.status === "confirmed")
           const killed = voted.filter((c) => c.status === "refuted")
+          const unverifiable = voted.filter((c) => c.status === "unverifiable")
           const unverified = voted.filter((c) => c.status === "unverified")
           const voteStr = (c: (typeof voted)[number]) => (c.verdicts.length - c.refutedVotes) + "-" + c.refutedVotes
+          // Surface the refuter's contradicting URL — the single most useful
+          // artifact a refutation produces (collected since day one, shown
+          // since 2026-07-08).
+          const counterOf = (c: (typeof voted)[number]) => {
+            const src = c.verdicts.find((v) => verdictOf(v) === "refuted" && v.counterSource)?.counterSource
+            return src ? " — contradicts: " + src : ""
+          }
           const refutedBlock = killed.length
-            ? "\n## Refuted claims (transparency)\n" + killed.map((c) => '- "' + c.claim + '" (' + c.sourceUrl + ", vote " + voteStr(c) + ")").join("\n")
+            ? "\n## Refuted claims (transparency)\n" + killed.map((c) => '- "' + c.claim + '" (' + c.sourceUrl + ", vote " + voteStr(c) + ")" + counterOf(c)).join("\n")
             : ""
-          const unverifiedBlock = unverified.length
+          const unverifiableBlock = unverifiable.length
+            ? "\n## Unverifiable claims (no credible evidence either way — NOT refuted)\n" +
+              unverifiable.map((c) => '- "' + c.claim + '" (' + c.sourceUrl + ")").join("\n")
+            : ""
+          const unverifiedBlock = (unverified.length
             ? "\n## Unverified claims (verifier failures — NOT refuted)\n" +
               unverified.map((c) => '- "' + c.claim + '" (' + c.sourceUrl + ", valid votes " + c.verdicts.length + "/" + c.votesAssigned + ")").join("\n")
-            : ""
+            : "") + unverifiableBlock
 
           if (confirmed.length === 0) {
-            const summary = killed.length === 0
+            const summary = killed.length === 0 && unverifiable.length === 0
               ? "verification infrastructure failed — no claim received enough valid verifier votes to adjudicate (rate limits or subagent errors). NOTHING was refuted; retry the run."
-              : unverified.length === 0
+              : killed.length === voted.length
                 ? "ALL " + voted.length + " claims were refuted by adversarial verification.\nResearch inconclusive — sources may be low-quality or claims overstated."
-                : "no claim survived: " + killed.length + " refuted on the merits, " + unverified.length + " unverified (verifier failures — not adjudicated; consider retrying)."
+                : "no claim survived: " + killed.length + " refuted on the merits, " + unverifiable.length +
+                  " unverifiable (no credible evidence either way), " + unverified.length + " unverified (verifier failures — not adjudicated; consider retrying)."
             return "Deep research: " + summary + "\n" +
-              refutedBlock + unverifiedBlock + "\n\n" + statsLine(" · confirmed: 0 · killed: " + killed.length + " · unverified: " + unverified.length)
+              refutedBlock + unverifiedBlock + "\n\n" +
+              statsLine(" · confirmed: 0 · killed: " + killed.length + " · unverifiable: " + unverifiable.length + " · unverified: " + unverified.length)
           }
 
           // ─── Synthesize ───
@@ -459,7 +512,7 @@ export const DeepResearchPlugin: Plugin = async ({ client, directory }) => {
             validate: isReport, abort,
           })
 
-          const stats = statsLine(" · verified: " + voted.length + " · confirmed: " + confirmed.length + " · killed: " + killed.length + " · unverified: " + unverified.length)
+          const stats = statsLine(" · verified: " + voted.length + " · confirmed: " + confirmed.length + " · killed: " + killed.length + " · unverifiable: " + unverifiable.length + " · unverified: " + unverified.length)
 
           if (!report) {
             // Salvage: synthesis failed — return verified claims raw rather than discarding the run.

@@ -35,9 +35,11 @@
   // --- Primary agents = Claude Code permission modes -------------------------
   // Tab / Shift+Tab cycles these, replicating Claude Code's Shift+Tab
   // permission-mode cycling: default (edits ask) -> accept-edits (edits
-  // auto-approved) -> plan (read-only research). Subagents in agents/ are
-  // unaffected. Per-agent permission maps are specified IN FULL (base rule +
-  // denies) rather than relying on merge semantics with the global map.
+  // auto-approved) -> auto (local free, outward asks) -> plan (read-only).
+  // Subagents in agents/ are unaffected. Per-agent maps rely on MERGE
+  // semantics: agent rules append AFTER the global rules and last-match-wins.
+  // Consequence: any agent map whose base rule ("*") would shadow a global
+  // hard deny must RE-ASSERT that deny after its base rule (see auto + plan).
   "default_agent": "default",
   "agent": {
     // built-in build is replaced by "default"/"accept-edits" below
@@ -49,7 +51,13 @@
         "edit": {
           "*": "ask",
           "~/.ssh/**": "deny",
+          "~/.config/gh/**": "deny",
+          "~/.config/gh-reckit/**": "deny",
+          "~/.config/gh-noon/**": "deny",
+          "**/.env": "deny",
+          "**/.env.*": "deny",
           "~/.local/share/opencode/auth.json": "deny",
+          "~/.local/share/opencode/context7_key": "deny",
           "~/.config/opencode/plugins/guard.ts": "deny",
           "~/.config/claude/hooks/**": "deny",
           "~/.claude/settings.json": "deny",
@@ -127,13 +135,25 @@
           "find *": "allow",
           "which *": "allow",
           "pwd": "allow",
-          "echo *": "allow"
+          "echo *": "allow",
+          // re-asserted hard denies — this map's "*": "ask" appends after the
+          // global denies and would otherwise downgrade them to ask
+          // (last-match-wins; same trap as auto mode).
+          "security *": "deny",
+          "claude auth *": "deny"
         }
       }
     }
   },
 
   // --- MCP Servers ------------------------------------------------------------
+  // Disabled by default: tool schemas of enabled servers enter EVERY session's
+  // context (playwright alone ~8-12K tokens — measured as the single largest
+  // fixed input cost, 2026-07-08 review). Enable per-project where actually
+  // used, via .opencode/opencode.json in that repo:
+  //   { "mcp": { "playwright": { "enabled": true } } }
+  // (sequential-thinking was removed entirely: redundant with the model's
+  // native thinking.)
   "mcp": {
     "context7": {
       "type": "remote",
@@ -141,17 +161,12 @@
       "headers": {
         "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}"
       },
-      "enabled": true
-    },
-    "sequential-thinking": {
-      "type": "local",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
-      "enabled": true
+      "enabled": false
     },
     "playwright": {
       "type": "local",
       "command": ["npx", "-y", "@playwright/mcp@latest", "--headless"],
-      "enabled": true
+      "enabled": false
     }
   },
 
@@ -182,7 +197,18 @@
     "edit": {
       "*": "allow",
       "~/.ssh/**": "deny",
+      // secrets writable = corruptible: mirror the read deny-list so agents
+      // can't blindly overwrite gh auth or .env files either. NOTE the same
+      // residual risk as read: allowlisted bash (cp/mv/touch/mkdir) can still
+      // write these paths without a prompt; accepted, guard.ts covers the
+      // catastrophic class.
+      "~/.config/gh/**": "deny",
+      "~/.config/gh-reckit/**": "deny",
+      "~/.config/gh-noon/**": "deny",
+      "**/.env": "deny",
+      "**/.env.*": "deny",
       "~/.local/share/opencode/auth.json": "deny",
+      "~/.local/share/opencode/context7_key": "deny",
       // guardrail core: guard.ts stays user-maintained (one step removed from
       // agents so no single agent action can defang it); other plugins and the
       // rest of the opencode config are agent-editable.

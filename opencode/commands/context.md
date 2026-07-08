@@ -7,7 +7,7 @@ description: >-
 
 Reference file sizes:
 
-!`wc -c ~/.config/opencode/AGENTS.md ~/.config/opencode/memory/MEMORY.md 2>/dev/null`
+!`wc -c ~/.config/opencode/AGENTS.md ~/.config/opencode/memory/MEMORY.md ~/.config/opencode/prompts/claude-code-norms.md 2>/dev/null`
 
 Explain what's loaded into THIS session's context, using the byte counts above
 (bytes / 4 ≈ tokens, note it as an estimate):
@@ -15,6 +15,10 @@ Explain what's loaded into THIS session's context, using the byte counts above
 - `memory/MEMORY.md` — the memory index, auto-loaded via the `instructions`
   array in `opencode.jsonc`; individual memory files are NOT loaded unless
   something in this conversation Read one — list any that were.
+- `prompts/claude-code-norms.md` — working norms, auto-loaded via the same
+  `instructions` array.
+- The system prompt and enabled tool/MCP schemas — not measurable from here,
+  but they exist and are a real share of the fixed overhead; say so.
 - Conversation history so far — describe roughly (number of turns / tool
   calls), no fake token count.
 - Tool outputs pulled in during this session (file reads, command output,

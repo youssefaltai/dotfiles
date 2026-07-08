@@ -28,7 +28,7 @@ deduplication, tallying, and synthesis. Follow the phases exactly.
 ## Tuning constants
 - ANGLES = 5 search angles
 - MAX_SOURCES = 15 sources fetched (across all angles, after dedup)
-- MAX_CLAIMS = 12 claims verified (the plugin engine uses 25 — manual
+- MAX_CLAIMS = 12 claims verified (the plugin engine uses 15 — manual
   orchestration keeps a smaller budget on purpose)
 - VOTES = tiered: 3 verifier votes per `central` claim, 1 per
   `supporting`/`tangential` claim; a majority of the assigned votes refuting
@@ -77,7 +77,7 @@ verbatim, the angle label and rationale, and the search query.
    contradicting evidence; voter 2: textual support / source quality (no web
    search); voter 3: recency. Single-vote claims get the contradicting-evidence
    lens. Do NOT tell voters how other voters voted.
-3. Tally per claim, three outcomes: REFUTED if a majority of assigned votes
+3. Tally per claim ON EACH VOTER'S `verdict` FIELD (never the legacy `refuted` boolean — it folds "unverifiable" into "refuted"): REFUTED if a majority of assigned votes
    refuted; CONFIRMED only if a majority of assigned votes are valid AND
    non-refuting (3-vote claims: ≥2 supporting votes; 1-vote claims: 1
    supporting vote — a 1-1 split with a failed third voter is contested, not

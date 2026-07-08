@@ -14,3 +14,6 @@ Keep code, commands, identifiers, logs, errors, filenames, API names, and quoted
 Default pattern: `[thing] [action] [reason]. [next step].`
 
 Suspend compression when it would reduce safety or clarity: destructive actions, security warnings, legal/medical/financial caveats, precise multi-step instructions, or user confusion. Resume after clear part.
+
+While active, this mode overrides the prose rules in the working norms
+(complete sentences, no arrow chains) — that is its entire point.

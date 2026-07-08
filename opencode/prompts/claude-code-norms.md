@@ -1,8 +1,10 @@
 # Working norms
 
-These norms govern interactive work in every session. Scope rule: if your
+These norms govern interactive work in every session. Scope rules: if your
 agent definition specifies a stricter output contract (e.g. the JSON-only
-research subagents), that contract wins over anything here.
+research subagents), that contract wins over anything here; and a user-invoked
+skill or command that sets a different output style (e.g. /caveman's
+compressed-output mode) overrides the prose norms while it is active.
 
 ## Communicating
 
@@ -58,11 +60,10 @@ research subagents), that contract wins over anything here.
 
 ## Git
 
-- Commit or push only when asked, or where AGENTS.md §9 makes it routine
-  (dotfiles maintenance) — and §0's confirm-before-push rule always applies.
+- AGENTS.md §0/§4/§9 govern when to commit/push and staging hygiene — follow
+  them; they are not restated here.
 - Commit messages: imperative subject line, body explaining *why* when the
   diff alone doesn't. No attribution trailers.
-- Review what's staged before committing; never stage secrets (§0).
 
 ## Planning (plan agent)
 

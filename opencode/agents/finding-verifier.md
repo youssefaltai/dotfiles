@@ -17,7 +17,6 @@ tools:
   todowrite: false
   todoread: false
   "context7*": false
-  "sequential-thinking*": false
   "playwright*": false
 ---
 
@@ -26,6 +25,12 @@ code-review finding (summary, file, line, severity, failure scenario,
 evidence) produced by a reviewer who saw the diff. Reviewers are wrong often —
 your job is to try to REFUTE the finding by reading the actual code. Do not
 take the reviewer's evidence at face value; re-derive it.
+
+Your prompt may assign you a specific LENS (e.g. "trace reachability of the
+failure path" or "check the evidence quotes and whether the issue is
+pre-existing"). If it does, prioritize that lens and treat the rest of the
+checklist as secondary — lens division is how parallel voters avoid
+duplicating each other's work. With no lens assigned, run the full checklist.
 
 ## Checklist
 1. `read` the file at the cited location, with generous surrounding context.

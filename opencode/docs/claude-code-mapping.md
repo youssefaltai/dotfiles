@@ -29,7 +29,7 @@ file. Claude Code stays installed for the reckit profile only.
 ## 2. Permission modes (Tab / Shift+Tab cycle)
 
 Claude's `Shift+Tab` mode cycle → OpenCode's `agent_cycle` (`tab`) /
-`agent_cycle_reverse` (`shift+tab`), cycling the three primary agents defined
+`agent_cycle_reverse` (`shift+tab`), cycling the four primary agents defined
 in `opencode.jsonc`:
 
 | Agent (Tab stop) | Mirrors | Actual behavior (opencode.jsonc) |
@@ -110,7 +110,7 @@ configured (owner decision) — `tui.json` only sets the `attention`
 | `--model <name>` | `-m provider/model` | e.g. `-m opencode/claude-sonnet-5` (see §6) |
 | `--permission-mode <mode>` | `--agent <default\|accept-edits\|plan>` | approximation: picks a whole primary-agent persona+permission-map, not just a mode enum |
 | `--allowedTools "Read,Edit,Bash"` | `--auto` | blunt approximation — auto-approves everything not explicitly denied; no per-tool allowlist flag |
-| `claude mcp add` | `opencode mcp add` / edit `mcp` block in `opencode.jsonc` | current servers: `context7`, `sequential-thinking`, `playwright` |
+| `claude mcp add` | `opencode mcp add` / edit `mcp` block in `opencode.jsonc` | servers configured but `enabled: false` by default (schema cost): `context7`, `playwright` — enable per-project via `.opencode/opencode.json` |
 | `claude agents` (background agent view) | `opencode agent list` | lists configured agents (primaries + subagents), not running background sessions |
 | `claude doctor` | `/doctor` (custom command, not CLI) | no CLI-level doctor; run it inside a session |
 | session export | `opencode export [sessionID]` (`--sanitize` to redact) | JSON, not plain text |

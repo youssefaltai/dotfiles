@@ -59,24 +59,11 @@ responsible for maintaining it. (This file lives in the dotfiles repo at
   - `~/work/noon/`     — noon/company projects (noon identity override).
   - future companies → `~/work/<company>/`.
 - Temp/scratch goes in a tmp dir, never in `~` or `~/.config`.
-- **Tools that ignore XDG by default** (npm, pub/Dart, Docker CLI, CocoaPods,
-  Copilot CLI) are pinned to XDG dirs via env vars in `~/.config/zsh/.zshrc`
-  (`npm_config_cache`, `NPM_CONFIG_USERCONFIG`, `PUB_CACHE`, `DOCKER_CONFIG`,
-  `CP_HOME_DIR`, `COPILOT_HOME`, `COPILOT_CACHE_HOME`); macOS shell-session save
-  is off via `SHELL_SESSIONS_DISABLE=1` in `.zprofile`. See those files' comments.
-- **Documented exceptions that stay in `$HOME`** (hardcoded paths, do not delete):
-  `~/.dartServer`, `~/.dart-tool`, `~/.flutter`, `~/.flutter-devtools` (Dart SDK),
-  `~/.codex` (Codex CLI), `~/.expo` (Expo), `~/.swiftpm` (SwiftPM),
-  `~/.claude` + `~/.claude-reckit` (Claude Code profile dirs; see §0),
-  `~/.local/share/opencode` (OpenCode data: auth, db, logs).
-- **Exception — Android toolchain** (added 2026-07-06): `~/Android/Sdk` is the
-  full Android SDK (Android Studio's default `--sdk_root`, kept there after
-  `avdmanager`/`sdkmanager` fought a custom path); referenced by `sdk.dir` in RN
-  Android projects' `android/local.properties`. `~/.android` and
-  `~/.config/.android` hold the AVD (`pixel8`) and adb keys (tool defaults).
-  `~/.local/share/gradle` is the intended `GRADLE_USER_HOME`, but that env var
-  is **not yet exported** in `~/.config/zsh/.zshrc` (pending Youssef's own
-  edit) — until then Gradle falls back to `~/.gradle`.
+- **XDG exceptions** (tools pinned via env vars, hardcoded `$HOME` paths like
+  `~/.dartServer`/`~/.codex`/`~/.expo`/`~/.swiftpm`, the Android toolchain at
+  `~/Android/Sdk`): full list + rationale in
+  `~/.config/opencode/docs/machine-manual.md` — Read it before touching
+  anything unusual in `$HOME`; those paths are intentional, do not delete.
 
 ## 3. Tools — prefer these (they are installed)
 
@@ -96,42 +83,23 @@ responsible for maintaining it. (This file lives in the dotfiles repo at
 
 ## 5. Git identity & accounts (auto-switch by directory)
 
-- **Personal** (default): `Youssef` / `youssef.altai@icloud.com`, GitHub
-  `youssefaltai`, SSH host `github.com`.
-- **Reckit** (under `~/work/reckit/`): `youssef@goreckit.com`, GitHub
-  `youssef-goreckit`, SSH host alias **`github-reckit`** (clone as
-  `git@github-reckit:youssef-goreckit/<repo>.git`), gh via
-  `GH_CONFIG_DIR=~/.config/gh-reckit`.
-- **Noon** (under `~/work/noon/`): `yaltai@noon.com`, GitHub `youssefaltai-noon`,
-  SSH host alias **`github-noon`** (clone as
-  `git@github-noon:youssefaltai-noon/<repo>.git`), gh via
-  `GH_CONFIG_DIR=~/.config/gh-noon`.
-- Identity switches automatically via `includeIf gitdir:~/work/<company>/`. Commits
-  are SSH-signed; default branch `main`.
-- **Per-profile SSH key** (`id_ed25519_<company>`, used for both auth and signing):
-  passphrases are served from the macOS login keychain (`AddKeysToAgent` +
-  `UseKeychain` in `~/.ssh/config`, one-time `ssh-add --apple-use-keychain`).
+- Three identities, switched automatically by `includeIf gitdir:~/work/<company>/`:
+  **personal** (default, GitHub `youssefaltai`), **reckit** (`~/work/reckit/`,
+  SSH host alias `github-reckit`, `GH_CONFIG_DIR=~/.config/gh-reckit`), and
+  **noon** (`~/work/noon/`, alias `github-noon`, `GH_CONFIG_DIR=~/.config/gh-noon`).
+  Commits SSH-signed; default branch `main`. Full mechanics (emails, clone
+  URLs, keychain SSH setup): `docs/machine-manual.md` — Read it before any
+  clone/remote/identity work in a company context.
 - OpenCode uses **one model-provider account for all contexts** (DeepSeek direct;
   key in `auth.json`) — AI billing is not identity-split (only git/gh identities
   are).
 
-## 6. Per-project environment (mise)
+## 6. Per-project environment (mise) & editor
 
-- Projects declare runtimes/env in a `mise.toml`: `mise use node@22`, etc.
-- Per-project env via `[env]` (e.g. `GH_CONFIG_DIR`, `NVIM_APPNAME`,
-  `CLAUDE_CONFIG_DIR` for reckit) needs a one-time `mise trust` in that dir.
-- **Exception — Flutter SDK**: Flutter SDK versions are managed by `fvm` (installed
-  via the `leoafarias/fvm` Homebrew tap), not mise. `fvm` works alongside mise in
-  `~/work/reckit/` and stores SDKs under `~/.local/share/fvm` (redirected via
-  `FVM_CACHE_PATH` in `.zshrc`).
-
-## 7. Editor
-
-- Neovim 0.12, plugins via built-in `vim.pack`. No plugin-manager framework.
-- **Base config**: `~/.config/nvim/init.lua` (lockfile `nvim-pack-lock.json`). Used everywhere.
-- **Flutter layer**: `~/.config/nvim-flutter/init.lua` — sources the base config then adds
-  Dart LSP + flutter-tools. Activated via `NVIM_APPNAME=nvim-flutter` (set by mise in
-  `~/work/reckit/`). Its plugins and state live under `~/.local/share/nvim-flutter`.
+- Runtimes/env per project via `mise.toml` (`mise use node@22`; `[env]` needs a
+  one-time `mise trust`). Flutter SDKs via `fvm`, not mise. Editor: Neovim 0.12
+  (base config + `nvim-flutter` layer for reckit). Detail:
+  `docs/machine-manual.md`.
 
 ## 8. AI tooling on this machine
 
@@ -183,57 +151,18 @@ index (`memory/MEMORY.md`) is auto-loaded into every session via the
 demand — when an index line looks relevant to the task at hand, Read that file
 before acting.
 
-Each memory is one file holding one fact, with frontmatter:
-
-```markdown
----
-name: <short-kebab-case-slug>
-description: <one-line summary — used to decide relevance from the index>
-metadata:
-  type: user | feedback | project | reference
----
-
-<the fact; for feedback/project, follow with **Why:** and **How to apply:**
-lines. Link related memories with [[their-name]].>
-```
-
-- **Types**: `user` — who Youssef is (role, expertise, preferences).
-  `feedback` — guidance he has given on how to work, both corrections and
-  confirmed approaches; include the why. `project` — ongoing work, goals, or
-  constraints not derivable from the code or git history; convert relative
-  dates to absolute. `reference` — pointers to external resources (URLs,
-  dashboards, tickets).
 - **When to save**: after user corrections, non-obvious hard-won findings
   (gotchas, verified workarounds), and decisions with lasting scope. Don't
   save what a repo already records (code structure, git history, its own
   AGENTS.md/docs) or what only matters to the current conversation.
-- **The store is global** (one dir for all projects): project-scoped memories
-  start their body with a `Scope: ~/work/...` line and get grouped under that
-  project's heading in the index.
-- **After writing a file**, add a one-line pointer in `MEMORY.md`
-  (`- [Title](file.md) — hook`). The index stays one line per memory — never
-  put memory content there — and stays under ~200 lines total; if it grows
-  past that, consolidate related memories into topic files rather than
-  letting the index bloat (the index is loaded into every session; the
-  memories are not).
-- **Per-project memory** (optional pattern): a project that needs its own
-  private store gets `.opencode/memory/` inside the repo plus a project
-  `opencode.json` with `"instructions": [".opencode/memory/MEMORY.md"]` —
-  same protocol, project-scoped, and it never leaks into this global store.
-- **Before saving**, check the index for an existing file that already covers
-  it — update that file rather than creating a duplicate; delete memories
-  that turn out to be wrong. Stale memories are worse than none: when a
-  recalled memory contradicts observed reality, trust reality and fix the
-  memory.
+- **Before SAVING a memory**, Read the "Memory — write protocol" section of
+  `docs/machine-manual.md` for the frontmatter schema and full rules (one
+  fact per file, update-don't-duplicate, add an index one-liner after every
+  write, delete memories that turn out wrong — when a recalled memory
+  contradicts observed reality, trust reality and fix the memory).
 - `memory/` is deliberately **not tracked** in the dotfiles repo (runtime
   state, may contain company-work details) — don't commit it or "fix" its
   gitignore entry.
 
-## 11. System specs (this machine)
-
-- **MacBook Pro** (`Mac17,2`) — Apple **M5**, 10 cores (4 performance + 6 efficiency).
-- **32 GB** unified memory, **arm64**.
-- **926 GB** internal SSD.
-- macOS **26.5.1** (build `25F80`).
-- Static snapshot — edit by hand if hardware/OS changes meaningfully
-  (`sysctl -n hw.model machdep.cpu.brand_string hw.memsize` + `sw_vers` to refresh).
+(System specs and all other reference detail live in
+`docs/machine-manual.md` — Read on demand, never loaded by default.)

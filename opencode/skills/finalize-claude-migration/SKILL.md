@@ -33,12 +33,12 @@ This runbook completes the migration that started on 2026-07-04. End state:
 ## 1. Confirm OpenCode's skills are self-contained (no ~/.claude dependency)
 
 Since 2026-07-05 OpenCode has no skill dependency on `~/.claude`: its skills
-are real files under `~/.config/opencode/skill/` (user-triggered wrappers live
-as commands in `~/.config/opencode/command/`), `~/.claude/skills/` no longer
+are real files under `~/.config/opencode/skills/` (user-triggered wrappers live
+as commands in `~/.config/opencode/commands/`), `~/.claude/skills/` no longer
 exists, and `OPENCODE_DISABLE_CLAUDE_CODE=1` (exported in
 `~/.config/zsh/.zshrc`) stops OpenCode scanning Claude fallback locations
 anyway. Nothing to rewire — just confirm with `opencode debug skill` that
-every skill resolves from `~/.config/opencode/skill/`.
+every skill resolves from `~/.config/opencode/skills/`.
 
 (The reckit Claude profile keeps its own Claude-idiom copies of
 grill-me/grilling under `~/.config/claude/skills/` — intentionally separate;

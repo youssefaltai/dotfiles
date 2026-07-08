@@ -24,7 +24,6 @@ tools:
   todowrite: false
   todoread: false
   "context7*": false
-  "sequential-thinking*": false
   "playwright*": false
 ---
 
