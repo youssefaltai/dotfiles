@@ -8,7 +8,7 @@
 //   code here; only the leaf work (search/fetch/verify/synthesize) is done by
 //   LLM subagents, driven via the SDK as child sessions of the caller.
 //
-// Requires the subagent definitions in ../agent/:
+// Requires the subagent definitions in ../agents/:
 //   web-searcher.md · source-extractor.md · claim-verifier.md ·
 //   research-analyst.md (tool-less; scoping + synthesis)
 //

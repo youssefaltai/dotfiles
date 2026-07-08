@@ -6,17 +6,27 @@
   // memory/ (persistent memory; index auto-loaded via "instructions").
   "$schema": "https://opencode.ai/config.json",
 
-  // --- Persistent memory --------------------------------------------------
-  // Loads the memory INDEX into every session (combined with AGENTS.md);
-  // individual memories under memory/ are read on demand. Relative paths
-  // resolve against this config's directory. Protocol: AGENTS.md §10.
-  "instructions": ["memory/MEMORY.md"],
+  // --- Instructions loaded into every session --------------------------------
+  // memory/MEMORY.md: the memory INDEX (individual memories under memory/ are
+  // read on demand; protocol in AGENTS.md §10).
+  // prompts/claude-code-norms.md: behavioral norms ported from Claude Code —
+  // loaded as instructions rather than replacing agent system prompts, so
+  // OpenCode's built-in tool guidance stays intact and JSON-only subagent
+  // contracts still win. Relative paths resolve against this config's dir.
+  "instructions": ["memory/MEMORY.md", "prompts/claude-code-norms.md"],
 
   // --- Models (DeepSeek direct API; auth in ~/.local/share/opencode/auth.json) ---
   // Main model for sessions. small_model handles cheap internal tasks
   // (session titles, summaries) so they don't burn main-model tokens.
   "model": "deepseek/deepseek-v4-pro",
   "small_model": "deepseek/deepseek-v4-flash",
+
+  // Effort variants ≈ Claude Code's /effort + thinking toggle: cycle with the
+  // variant_cycle keybind (ctrl+t). No custom variants needed — the models.dev
+  // registry marks deepseek-v4-pro/-flash with reasoning_options (thinking
+  // toggle + effort high|max) and OpenCode synthesizes the cycleable variants
+  // from that metadata. Defining variants here would OVERRIDE the built-ins,
+  // so deliberately left out.
 
   // Updates come via Homebrew only (brew upgrade regenerates the Brewfile);
   // just notify when a newer version exists instead of self-updating.

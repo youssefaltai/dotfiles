@@ -140,7 +140,11 @@ responsible for maintaining it. (This file lives in the dotfiles repo at
   `~/.local/share/opencode/auth.json`; OpenCode Zen and OpenRouter keys also
   present as alternatives). Config: `~/.config/opencode/` (`opencode.jsonc`,
   this file, `plugins/guard.ts`, `agents/`, `commands/`, `skills/`, `prompts/`).
-  Config changes require an OpenCode restart.
+  Config changes require an OpenCode restart. Primary agents mirror Claude
+  Code's permission modes — Tab cycles `default` (edits ask) → `accept-edits`
+  → `plan` (read-only); working norms load from
+  `prompts/claude-code-norms.md`; the "coming from Claude Code" cheat sheet is
+  `docs/claude-code-mapping.md`.
 - **Claude Code** — reckit-only company tool (unavoidable requirement); never
   used outside `~/work/reckit/`. Profiles: `~/.claude` (personal, decommissions
   ~2026-07-10 via the `finalize-claude-migration` skill) and `~/.claude-reckit`
@@ -208,7 +212,14 @@ lines. Link related memories with [[their-name]].>
   project's heading in the index.
 - **After writing a file**, add a one-line pointer in `MEMORY.md`
   (`- [Title](file.md) — hook`). The index stays one line per memory — never
-  put memory content there.
+  put memory content there — and stays under ~200 lines total; if it grows
+  past that, consolidate related memories into topic files rather than
+  letting the index bloat (the index is loaded into every session; the
+  memories are not).
+- **Per-project memory** (optional pattern): a project that needs its own
+  private store gets `.opencode/memory/` inside the repo plus a project
+  `opencode.json` with `"instructions": [".opencode/memory/MEMORY.md"]` —
+  same protocol, project-scoped, and it never leaks into this global store.
 - **Before saving**, check the index for an existing file that already covers
   it — update that file rather than creating a duplicate; delete memories
   that turn out to be wrong. Stale memories are worse than none: when a

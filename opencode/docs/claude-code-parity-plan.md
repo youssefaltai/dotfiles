@@ -5,10 +5,12 @@ aspect OpenCode's architecture allows — interaction surface, config convention
 extension model, behavior, and safety — with an honest register of what cannot be
 replicated without forking the TUI.
 
-**Status:** plan approved-pending; nothing implemented yet. Current config is fully
-open to revamp (owner's instruction, 2026-07-08). The only fixed constraints are the
-safety invariants from the system manual (irreplaceable Claude login, secrets,
-catastrophic deletes) — those carry over no matter what shape the config takes.
+**Status: EXECUTED 2026-07-08** (all phases complete; theme/keybinds/statusline/vim
+dropped by owner decision during execution). Verified live: mode agents run,
+guard blocks all 24 test cases, isolation proven (CLAUDE.md marker invisible,
+AGENTS.md control visible). See `docs/claude-code-mapping.md` for the resulting
+day-to-day mapping. The safety invariants from the system manual (irreplaceable
+Claude login, secrets, catastrophic deletes) carried over unchanged.
 
 **Companion reference:** `docs/claude-code-feature-inventory.md` — the exhaustive
 Claude Code feature spec this plan maps against.
