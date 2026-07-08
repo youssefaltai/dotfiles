@@ -2,15 +2,15 @@
 
 You operate **Youssef's macOS machine** (Apple Silicon). It is intentionally clean,
 contained, and reproducible. Follow these conventions exactly — they are how the
-system is meant to be run. OpenCode + OpenRouter is the primary agent on this
-machine and is responsible for maintaining it. (This file lives in the dotfiles
-repo at `~/.config/opencode/AGENTS.md` and is loaded into every session.)
+system is meant to be run. OpenCode is the primary agent on this machine and is
+responsible for maintaining it. (This file lives in the dotfiles repo at
+`~/.config/opencode/AGENTS.md` and is loaded into every session.)
 
 ## 0. Safety — never do these (also enforced by the guard plugin + permissions)
 
-- **OpenRouter credentials**: never read, print, or commit
+- **Provider credentials**: never read, print, or commit
   `~/.local/share/opencode/auth.json`. Never delete it — it holds the API key
-  auth for this tool.
+  auth for this tool (DeepSeek direct, plus OpenCode Zen and OpenRouter).
 - **TRANSITION (until ~2026-07-10)**: the personal Claude Code subscription is
   still active and its login is IRREPLACEABLE — NEVER run
   `claude auth login`/`logout`, NEVER touch the macOS Keychain items
@@ -29,9 +29,9 @@ repo at `~/.config/opencode/AGENTS.md` and is loaded into every session.)
 - **Confirm before outward-facing or irreversible actions**: pushing, publishing,
   force-pushing, deleting repos/files you didn't create, renaming remote repos.
 - Config self-modification: you may edit the OpenCode config (`opencode.jsonc`,
-  `agent/`, `command/`, `skill/`, and plugins under `plugins/`) via the Edit
-  tool when asked, but **propose permission/guard changes explicitly and get
-  confirmation first**. The one exception is the guard plugin itself
+  `agents/`, `commands/`, `skills/`, `prompts/`, and plugins under `plugins/`)
+  via the Edit tool when asked, but **propose permission/guard changes explicitly
+  and get confirmation first**. The one exception is the guard plugin itself
   (`~/.config/opencode/plugins/guard.ts`): it is edit-protected and only the
   user changes it, so no single agent action can defang the guardrails.
 
@@ -111,8 +111,9 @@ repo at `~/.config/opencode/AGENTS.md` and is loaded into every session.)
 - **Per-profile SSH key** (`id_ed25519_<company>`, used for both auth and signing):
   passphrases are served from the macOS login keychain (`AddKeysToAgent` +
   `UseKeychain` in `~/.ssh/config`, one-time `ssh-add --apple-use-keychain`).
-- OpenCode uses **one OpenRouter key for all contexts** — AI billing is not
-  identity-split (only git/gh identities are).
+- OpenCode uses **one model-provider account for all contexts** (DeepSeek direct;
+  key in `auth.json`) — AI billing is not identity-split (only git/gh identities
+  are).
 
 ## 6. Per-project environment (mise)
 
@@ -135,16 +136,23 @@ repo at `~/.config/opencode/AGENTS.md` and is loaded into every session.)
 ## 8. AI tooling on this machine
 
 - **OpenCode (this tool)** — the primary agent everywhere, and the system
-  maintainer. Provider: OpenRouter (`/connect`; key in
-  `~/.local/share/opencode/auth.json`). Config: `~/.config/opencode/`
-  (`opencode.jsonc`, this file, `plugins/guard.ts`, `agent/`, `skill/`).
+  maintainer. Provider: DeepSeek direct API (key in
+  `~/.local/share/opencode/auth.json`; OpenCode Zen and OpenRouter keys also
+  present as alternatives). Config: `~/.config/opencode/` (`opencode.jsonc`,
+  this file, `plugins/guard.ts`, `agents/`, `commands/`, `skills/`, `prompts/`).
   Config changes require an OpenCode restart.
-- **Claude Code** — company tool for reckit work only, going forward. Profiles:
-  `~/.claude` (personal, active until ~2026-07-10) and `~/.claude-reckit`
+- **Claude Code** — reckit-only company tool (unavoidable requirement); never
+  used outside `~/work/reckit/`. Profiles: `~/.claude` (personal, decommissions
+  ~2026-07-10 via the `finalize-claude-migration` skill) and `~/.claude-reckit`
   (permanent, selected via `CLAUDE_CONFIG_DIR` set by mise under `~/work/reckit/`).
   Shared wiring in `~/.config/claude/`. Do not migrate, break, or "clean up" any
-  of it outside an explicit finalization request (see the
-  `finalize-claude-migration` skill).
+  of it outside an explicit finalization request.
+- **Isolation**: OpenCode never reads or uses anything of Claude Code's —
+  `OPENCODE_DISABLE_CLAUDE_CODE=1` is exported in `~/.config/zsh/.zshrc`, which
+  disables OpenCode's built-in reading of `CLAUDE.md` files and `~/.claude/skills/`.
+  Instructions come from `AGENTS.md` only; skills from `skills/` +
+  `.opencode/skills/` only. The Claude paths in the edit-deny permission list are
+  *protection* of reckit's tooling, not usage.
 
 ## 9. Maintenance routines
 
@@ -209,3 +217,12 @@ lines. Link related memories with [[their-name]].>
 - `memory/` is deliberately **not tracked** in the dotfiles repo (runtime
   state, may contain company-work details) — don't commit it or "fix" its
   gitignore entry.
+
+## 11. System specs (this machine)
+
+- **MacBook Pro** (`Mac17,2`) — Apple **M5**, 10 cores (4 performance + 6 efficiency).
+- **32 GB** unified memory, **arm64**.
+- **926 GB** internal SSD.
+- macOS **26.5.1** (build `25F80`).
+- Static snapshot — edit by hand if hardware/OS changes meaningfully
+  (`sysctl -n hw.model machdep.cpu.brand_string hw.memsize` + `sw_vers` to refresh).

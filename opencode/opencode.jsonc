@@ -2,8 +2,8 @@
   // OpenCode global config — schema-validated (opencode refuses to start on
   // invalid fields). Loaded once at startup; restart opencode after editing.
   // Companion files in this dir: AGENTS.md (operating manual, auto-loaded),
-  // plugins/guard.ts (bash guardrails), agent/, skill/, memory/ (persistent
-  // memory; index auto-loaded via "instructions" below).
+  // plugins/guard.ts (bash guardrails), agents/, commands/, skills/, prompts/,
+  // memory/ (persistent memory; index auto-loaded via "instructions").
   "$schema": "https://opencode.ai/config.json",
 
   // --- Persistent memory --------------------------------------------------

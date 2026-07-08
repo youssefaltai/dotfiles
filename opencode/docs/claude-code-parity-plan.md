@@ -31,9 +31,9 @@ cutover so OpenCode is a full replacement on day one.
 Two levers:
 
 1. **Emulate through config.** Primary agents that mirror Claude's permission modes
-   (Tab = Shift+Tab cycling), a Claude-dark theme, variants as effort levels, custom
-   commands replicating the slash-command surface, Claude-style memory, and ported
-   system prompts.
+   (Tab = Shift+Tab cycling), variants as effort levels, custom commands replicating
+   the slash-command surface, Claude-style memory, and ported system prompts.
+   (Theme: out of scope — owner keeps the stock OpenCode theme, decision 2026-07-08.)
 2. **Re-implement the rest as native plugins.** OpenCode's plugin API
    (tool.execute.before/after, session events, custom tools) hosts an OpenCode-owned
    guard and, optionally, a general hooks engine modeled on Claude Code's hook
@@ -136,11 +136,9 @@ Then apply the isolation tasks from §0 (env exports + config audit).
 replace them). Bypass/dontAsk get no agent — `--auto` flag covers the CI case.
 
 **tui.json:**
-- `theme: "claude-dark"` — build `themes/claude-dark.json` replicating Claude Code's
-  dark palette (background, orange/spark accent, diff colors, dimmed tool output).
 - `attention` block ≈ notification parity: enable `notifications` + `sound` for
   `permission`, `question`, `error`, `done`, `subagent_done`.
-- Keybinds/statusline/vim: **out of scope** — stock OpenCode defaults stay.
+- Theme, keybinds, statusline, vim: **out of scope** — stock OpenCode defaults stay.
 
 ## Phase 3 — Native guard + hooks engine (2–3 h)
 
@@ -272,7 +270,7 @@ Optional later: `explanatory` / `learning` primary agents ≈ output styles.
 |---|---|---|
 | 0 | snapshot, commit, push | 0.5 h |
 | 1 | restructure + isolation + doc sync | 1.5 h |
-| 2 | mode agents, theme, attention | 1.5 h |
+| 2 | mode agents, attention | 1 h |
 | 3 | native guard rule port (+ optional hooks engine) | 1–3 h |
 | 4 | command surface + mapping doc | 2 h |
 | 5 | memory alignment | 1 h |
