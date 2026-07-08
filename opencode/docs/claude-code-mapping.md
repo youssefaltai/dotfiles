@@ -128,12 +128,13 @@ thinking toggle): built-in — OpenCode synthesizes them from the models.dev
 v4 accepts only those two effort levels, lower values coerce to `high`
 server-side). Deliberately NOT hand-defined in `opencode.jsonc`: custom
 variants would override the working built-ins.
-Known upstream issue to keep in mind: OpenCode's OpenAI-compatible DeepSeek
-path has an open multi-turn thinking bug report (anomalyco/opencode #24114 —
-400 on unreturned `reasoning_content`); if thinking variants ever start
-failing mid-conversation, the documented workaround (#24122) is routing the
-provider through DeepSeek's Anthropic-compatible endpoint
-(`@ai-sdk/anthropic`, `baseURL: https://api.deepseek.com/anthropic`).
+Historical upstream issue (verified 2026-07-08): the OpenAI-compatible
+DeepSeek path used to 400 on unreturned `reasoning_content` in multi-turn
+thinking (anomalyco/opencode #24114 — now **closed**, so likely fixed by
+v1.17.14). If thinking variants ever regress mid-conversation, the documented
+workaround (#24122, closed as not-planned) is routing the provider through
+DeepSeek's Anthropic-compatible endpoint (`@ai-sdk/anthropic`,
+`baseURL: https://api.deepseek.com/anthropic`).
 
 **Real Claude is already one `/models` switch away** — no extra config. The
 OpenCode Zen auth on this machine exposes (`opencode models | grep claude`,
