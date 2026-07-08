@@ -1,0 +1,14 @@
+{
+  // OpenCode TUI settings (separate from opencode.jsonc engine config).
+  // Theme/keybinds deliberately stock (owner decision 2026-07-08).
+  "$schema": "https://opencode.ai/tui.json",
+
+  // Notification parity with Claude Code (bell/notify when input is needed,
+  // a run finishes, or something errors).
+  "attention": {
+    "enabled": true,
+    "notifications": true,
+    "sound": true,
+    "volume": 0.4
+  }
+}
