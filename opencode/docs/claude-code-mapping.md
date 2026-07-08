@@ -36,11 +36,12 @@ in `opencode.jsonc`:
 |---|---|---|
 | `default` | Manual mode | Edits: ask. Bash: allowlist (`git`, `gh`, `brew`, `ls`, `cat`, `rg`, `mkdir`, `cp`, `npm`, ...) allowed, everything else asks. Secrets (`~/.ssh`, auth.json, guard.ts) hard-denied. |
 | `accept-edits` | acceptEdits | Edits auto-approved. Adds `mv *`/`rm *`/`rmdir *` to the allow list on top of the global bash allowlist (guard.ts still hard-blocks catastrophic/guardrail-targeting `rm`). |
+| `auto` | Auto mode | Everything local auto-approved (`bash *: allow`, edits allowed); outward/irreversible ops ask (`git push`, `git reset --hard`, `git clean`, `gh pr merge`, `gh release`, `gh repo`, `npm/pnpm publish`, `docker push`); `security *`/`claude auth *` re-asserted as deny after the broad allow. Rule-based approximation of Claude's classifier — guard.ts still hard-blocks the catastrophic class. |
 | `plan` | Plan mode | `edit: deny` outright. Bash restricted to a true read-only allowlist (`git status/log/diff/show/branch`, `ls`, `cat`, `rg`, `find`, ...); everything else asks. |
 
 `default_agent` is `default`. Built-in `build` agent is `disable: true` (these
-three replace it). No `auto`/`bypassPermissions`/`dontAsk` agent — the closest
-CLI analog is `opencode run --auto` (see §5), used sparingly.
+four replace it). No `bypassPermissions`/`dontAsk` agent — the closest CLI
+analog is `opencode run --auto` (see §5), used sparingly.
 
 ## 3. Slash commands
 

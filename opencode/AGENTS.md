@@ -142,7 +142,7 @@ responsible for maintaining it. (This file lives in the dotfiles repo at
   this file, `plugins/guard.ts`, `agents/`, `commands/`, `skills/`, `prompts/`).
   Config changes require an OpenCode restart. Primary agents mirror Claude
   Code's permission modes — Tab cycles `default` (edits ask) → `accept-edits`
-  → `plan` (read-only); working norms load from
+  → `auto` (local free, outward asks) → `plan` (read-only); working norms load from
   `prompts/claude-code-norms.md`; the "coming from Claude Code" cheat sheet is
   `docs/claude-code-mapping.md`.
 - **Claude Code** — reckit-only company tool (unavoidable requirement); never

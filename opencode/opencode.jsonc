@@ -72,6 +72,35 @@
         }
       }
     },
+    "auto": {
+      "mode": "primary",
+      "description": "Auto mode — local work auto-approved; outward/destructive actions ask (Claude Code auto mode)",
+      // Rule-based approximation of Claude Code's auto-mode classifier: local
+      // edits and commands run freely, outward-facing/irreversible operations
+      // ask, and the hard denies stay hard. guard.ts still blocks the
+      // catastrophic class underneath. NOTE: because the resolved rule list is
+      // last-match-wins and agent rules append AFTER global ones, the broad
+      // "*: allow" would override the global security/claude-auth denies —
+      // they are deliberately re-asserted after it.
+      "permission": {
+        "bash": {
+          "*": "allow",
+          // outward-facing / hard-to-reverse — ask first (AGENTS.md §0)
+          "git push*": "ask",
+          "git reset --hard*": "ask",
+          "git clean*": "ask",
+          "gh pr merge*": "ask",
+          "gh release *": "ask",
+          "gh repo *": "ask",
+          "npm publish*": "ask",
+          "pnpm publish*": "ask",
+          "docker push*": "ask",
+          // re-asserted hard denies (must come after "*": "allow")
+          "security *": "deny",
+          "claude auth *": "deny"
+        }
+      }
+    },
     "plan": {
       // built-in plan agent (keeps its planning prompt); permissions tightened
       // from ask to a true read-only profile (Claude Code plan mode).
