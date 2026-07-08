@@ -121,6 +121,11 @@ alias claude-reckit='CLAUDE_CONFIG_DIR="$HOME/.claude-reckit" claude'
 # Prevent OpenCode from scanning Claude Code fallback locations (skills, etc.),
 # keeping it fully independent.
 export OPENCODE_DISABLE_CLAUDE_CODE=1
+# Register the built-in `websearch` tool (Exa hosted MCP, no API key). Without
+# this it only exists on the OpenCode provider, and web-searcher agents in the
+# deep-research pipeline have no search tool at all (2026-07-08 incident: they
+# hallucinated search results when the tool came up "Invalid Tool").
+export OPENCODE_ENABLE_EXA=1
 # ----------------------------------------------------------------------------
 
 # --- mise: runtimes, env vars, tasks (per-project) --------------------------
