@@ -71,9 +71,7 @@ it's written down.
   claim can't be verified, say so rather than guessing.
 
 ## Safety (non-negotiable)
-- Obey AGENTS.md §0. Never touch Claude auth / Keychain / OpenRouter auth.json.
-  The Claude Code wiring (`~/.claude`, `~/.claude-reckit`, `~/.config/claude/`)
-  is off-limits outside an explicit finalization request.
+- Obey AGENTS.md §0. Never touch OpenCode auth.json or OpenRouter keys.
 - Confirm before pushing or any outward-facing / irreversible action.
 
 Report what you changed concisely; don't make unrequested changes.

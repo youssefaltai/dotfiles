@@ -1,8 +1,7 @@
 // deep-research.ts — OpenCode plugin registering a `deep_research` custom tool.
 //
-// Deterministic port of Claude Code's deep-research Workflow script:
-//   Scope → pipeline(Search → URL-dedup → Fetch+Extract) → claim-dedup →
-//   tiered adversarial Verify (3 lens-diverse votes for the top central
+// Pipeline: Scope → Search → URL-dedup → Fetch+Extract → claim-dedup →
+//     tiered adversarial Verify (3 lens-diverse votes for the top central
 //   claims, 1 for the rest) →
 //   Synthesize. Orchestration (loops, dedup, budgets, vote tallies) runs as
 //   code here; only the leaf work (search/fetch/verify/synthesize) is done by

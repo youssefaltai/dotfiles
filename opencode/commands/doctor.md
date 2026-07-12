@@ -26,8 +26,8 @@ to one line, with a fix suggestion on failures.
 5. **Guard plugin** — `~/.config/opencode/plugins/guard.ts` exists, and the
    edit-deny rule for it is present in opencode.jsonc. Do NOT test-fire guard
    rules by running forbidden commands.
-6. **Isolation** — `echo $OPENCODE_DISABLE_CLAUDE_CODE` prints `1` (OpenCode
-   must never read Claude Code files; see AGENTS.md §8).
+6. **Isolation** — `echo $OPENCODE_DISABLE_CLAUDE_CODE` prints `1` (prevents
+   OpenCode from scanning non-OpenCode skill/config locations).
 7. **Memory integrity** — every line in `memory/MEMORY.md` points at an
    existing file, and every `memory/*.md` (except the index) appears in the
    index. Report orphans/dead links; offer to fix only if asked.

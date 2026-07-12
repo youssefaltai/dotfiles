@@ -63,6 +63,7 @@ export DOCKER_CONFIG="$XDG_CONFIG_HOME/docker"
 # Free API key for context7.com — up-to-date library docs for LLMs.
 # Key stored in opencode's data dir (not in dotfiles).
 export CONTEXT7_API_KEY="$(< "$HOME/.local/share/opencode/context7_key")"
+export EXA_API_KEY="$(< "$HOME/.local/share/opencode/exa_key")"
 # ----------------------------------------------------------------------------
 
 # --- CocoaPods --------------------------------------------------------------
@@ -92,30 +93,13 @@ export ATUIN_LOG_DIR="$XDG_STATE_HOME/atuin"
 
 # --- Default editor ---------------------------------------------------------
 # Make Neovim the editor for everything that respects $EDITOR/$VISUAL: git
-# commit/rebase, `Ctrl-X Ctrl-E` to edit the command line in nvim, Claude Code's
-# external-editor key (Ctrl+G), etc. nvim is brew-managed (containment rule).
+# commit/rebase, `Ctrl-X Ctrl-E` to edit the command line in nvim, etc. nvim is
+# brew-managed (containment rule).
 export EDITOR="nvim"
 export VISUAL="nvim"
 # ----------------------------------------------------------------------------
 
-# --- Claude Code profiles ---------------------------------------------------
-# On macOS ALL Claude creds live in the Keychain (NOT in a .credentials.json
-# file -- that's the Linux/headless path). The Keychain service name is:
-#   "Claude Code-credentials-<first 8 hex of sha256(absolute config-dir path)>"
-# The DEFAULT profile (no CLAUDE_CONFIG_DIR) uses the un-suffixed
-# "Claude Code-credentials". CLAUDE_CONFIG_DIR just selects which item is used.
-#   personal -> bare `claude`  (default Keychain item; already signed in)
-#   reckit   -> ~/.claude-reckit  (its own Keychain item)
-#
-# !! PERSONAL ACCOUNT IS IRREPLACEABLE: the login cannot be redone. NEVER run
-# !! `claude auth logout`/`login`, delete its Keychain item, or set
-# !! CLAUDE_CODE_OAUTH_TOKEN on personal. Recovery blob: Passwords.app entry
-# !! "Claude Code old account credentials" (no-login restore path).
-#
-# NOTE: CLAUDE_CONFIG_DIR is real but UNDOCUMENTED/unsupported (issue #33430).
-alias claude-personal='env -u CLAUDE_CONFIG_DIR claude'
-alias claude-reckit='CLAUDE_CONFIG_DIR="$HOME/.claude-reckit" claude'
-# ----------------------------------------------------------------------------
+
 
 # --- OpenCode -----------------------------------------------------------------
 # Prevent OpenCode from scanning Claude Code fallback locations (skills, etc.),
@@ -131,7 +115,7 @@ export OPENCODE_ENABLE_EXA=1
 # --- mise: runtimes, env vars, tasks (per-project) --------------------------
 # Activates per-directory tool versions + [env] vars. Config is XDG-clean
 # (~/.config/mise, ~/.local/share/mise). Project files with an [env] block
-# (e.g. NVIM_APPNAME / CLAUDE_CONFIG_DIR switches) need a one-time `mise trust`.
+# (e.g. NVIM_APPNAME) need a one-time `mise trust`.
 eval "$(mise activate zsh)"
 # ----------------------------------------------------------------------------
 

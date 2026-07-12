@@ -44,9 +44,6 @@ mise/.mise.toml
 !tmux/
 !tmux/**
 
-# claude (system manual, bootstrap script, guard hook, statusline, maintenance agent)
-!claude/
-!claude/**
 
 # opencode (primary agent: operating manual, config, guard plugin, agents, skills)
 # node_modules + package files are runtime state managed by opencode itself

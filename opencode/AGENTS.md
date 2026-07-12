@@ -11,19 +11,8 @@ responsible for maintaining it. (This file lives in the dotfiles repo at
 - **Provider credentials**: never read, print, or commit
   `~/.local/share/opencode/auth.json`. Never delete it — it holds the API key
   auth for this tool (DeepSeek direct, plus OpenCode Zen and OpenRouter).
-- **TRANSITION (until ~2026-07-10)**: the personal Claude Code subscription is
-  still active and its login is IRREPLACEABLE — NEVER run
-  `claude auth login`/`logout`, NEVER touch the macOS Keychain items
-  `Claude Code-credentials*`, NEVER set `CLAUDE_CODE_OAUTH_TOKEN`. The
-  account-recovery blob lives in the Passwords.app entry
-  **"Claude Code old account credentials"** — keep it. When the subscription
-  ends, finalize the migration with the `finalize-claude-migration` skill.
-- **Reckit's Claude Code profile is permanent** (company team subscription):
-  never delete `~/.claude-reckit/` or break its wiring
-  (`~/.config/claude/{system.md,hooks/guard.sh,statusline.sh}`,
-  `CLAUDE_CONFIG_DIR` in `~/work/reckit/mise.toml`).
-- Never run catastrophic deletes (`rm -rf ~`, `rm -rf /`, removing `~/.claude*`
-  or `~/.config/opencode`).
+- Never run catastrophic deletes (`rm -rf ~`, `rm -rf /`, removing
+  `~/.config/opencode`).
 - Never read secrets into output or commit them: `~/.ssh/*`, gh configs
   (`~/.config/gh*`), any `.env`.
 - **Confirm before outward-facing or irreversible actions**: pushing, publishing,
@@ -39,10 +28,6 @@ responsible for maintaining it. (This file lives in the dotfiles repo at
 
 - **Binaries**: only via Homebrew → `/opt/homebrew`. No random scripts/`.pkg`s.
   OpenCode itself is brew-managed (`brew "anomalyco/tap/opencode"` in the Brewfile).
-  **Exception — Claude Code CLI**: installed via Anthropic's native installer,
-  self-managed under `~/.local/share/claude/versions/` (symlinked from
-  `~/.local/bin/claude`). It stays for the reckit (company) profile; leave its
-  self-update mechanism alone (do not `brew install claude-code`).
 - **Configs**: under `~/.config` (XDG). `$HOME` stays clean.
 - **Language runtimes**: only via **mise**, per-project. Never `brew install` a
   language for project use; never rely on system python/node.
@@ -50,7 +35,7 @@ responsible for maintaining it. (This file lives in the dotfiles repo at
 ## 2. Where things go
 
 - `~/.config/<tool>/` — every tool config (git, nvim, ghostty, starship, mise,
-  atuin, tmux, zsh, opencode, claude).
+  atuin, tmux, zsh, opencode).
 - `~/.config/zsh/.zshrc` + `.zprofile` — shell config (relocated via ZDOTDIR;
   `~/.zshenv` is the only home dotfile).
 - `~/work/<context>/` — ALL projects, one folder per context:
@@ -108,23 +93,9 @@ responsible for maintaining it. (This file lives in the dotfiles repo at
   `~/.local/share/opencode/auth.json`; OpenCode Zen and OpenRouter keys also
   present as alternatives). Config: `~/.config/opencode/` (`opencode.jsonc`,
   this file, `plugins/guard.ts`, `agents/`, `commands/`, `skills/`, `prompts/`).
-  Config changes require an OpenCode restart. Primary agents mirror Claude
-  Code's permission modes — Tab cycles `default` (edits ask) → `accept-edits`
-  → `auto` (local free, outward asks) → `plan` (read-only); working norms load from
-  `prompts/claude-code-norms.md`; the "coming from Claude Code" cheat sheet is
-  `docs/claude-code-mapping.md`.
-- **Claude Code** — reckit-only company tool (unavoidable requirement); never
-  used outside `~/work/reckit/`. Profiles: `~/.claude` (personal, decommissions
-  ~2026-07-10 via the `finalize-claude-migration` skill) and `~/.claude-reckit`
-  (permanent, selected via `CLAUDE_CONFIG_DIR` set by mise under `~/work/reckit/`).
-  Shared wiring in `~/.config/claude/`. Do not migrate, break, or "clean up" any
-  of it outside an explicit finalization request.
-- **Isolation**: OpenCode never reads or uses anything of Claude Code's —
-  `OPENCODE_DISABLE_CLAUDE_CODE=1` is exported in `~/.config/zsh/.zshrc`, which
-  disables OpenCode's built-in reading of `CLAUDE.md` files and `~/.claude/skills/`.
-  Instructions come from `AGENTS.md` only; skills from `skills/` +
-  `.opencode/skills/` only. The Claude paths in the edit-deny permission list are
-  *protection* of reckit's tooling, not usage.
+  Config changes require an OpenCode restart. Permission modes — Tab cycles
+  `default` (edits ask) → `accept-edits` → `auto` (local free, outward asks) →
+  `plan` (read-only).
 
 ## 9. Maintenance routines
 

@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # install.sh — reproduce this machine's config on a fresh Mac.
 # Idempotent: safe to re-run. Automates the mechanical parts only; SSH keys,
-# ~/.ssh/config, gh auth, and the (irreplaceable) Claude login are manual — see
-# README.md §3. This script never touches secrets or the Claude credentials.
+# ~/.ssh/config, and gh auth are manual — see README.md §3.
 set -euo pipefail
 
 CFG="$HOME/.config"
@@ -48,13 +47,7 @@ else
   skip "mise not on PATH yet — run 'mise install' after restarting your shell"
 fi
 
-# --- 5. Claude Code per-profile wiring -------------------------------------
-# Writes settings.json etc. Safe here: the guard hook it references isn't active
-# during a fresh install. It does NOT log in or touch credentials.
-step "Claude Code wiring (claude/bootstrap.sh)"
-bash "$CFG/claude/bootstrap.sh"
-
-# --- 6. Flip origin to SSH (clone was HTTPS to bootstrap without keys) ------
+# --- 5. Flip origin to SSH (clone was HTTPS to bootstrap without keys) ------
 step "git remote origin → SSH"
 SSH_URL="git@github.com:youssefaltai/dotfiles.git"
 if [ "$(git -C "$CFG" remote get-url origin 2>/dev/null)" = "$SSH_URL" ]; then
@@ -64,7 +57,7 @@ else
   echo "    set to $SSH_URL"
 fi
 
-# --- 7. ~/work skeleton ----------------------------------------------------
+# --- 6. ~/work skeleton ----------------------------------------------------
 step "~/work directory skeleton"
 mkdir -p "$HOME/work/personal" "$HOME/work/reckit" "$HOME/work/noon"
 
@@ -73,11 +66,10 @@ cat <<'DONE'
 
 Automated setup complete. Restart your shell:  exec zsh
 
-Remaining MANUAL steps (secrets / irreplaceable account) — see README.md §3:
+Remaining MANUAL steps (secrets) — see README.md §3:
   a. SSH keys  : id_ed25519_{personal,reckit,noon}  (restore or ssh-keygen)
   b. ~/.ssh/config host aliases + ssh-add --apple-use-keychain
   c. gh auth login  (personal, then reckit, then noon via GH_CONFIG_DIR)
-  d. Claude login   : ⚠ DO NOT re-login — restore from Passwords.app blob only
-  e. fvm install <version>  (only for reckit Flutter work)
-  f. OpenCode auth  : run `opencode`, then /connect → OpenRouter → paste API key
+  d. fvm install <version>  (only for reckit Flutter work)
+  e. OpenCode auth  : run `opencode`, then /connect → OpenRouter → paste API key
 DONE

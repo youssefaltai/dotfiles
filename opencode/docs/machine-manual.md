@@ -14,8 +14,7 @@ fact-checks it like any other doc.
   `SHELL_SESSIONS_DISABLE=1` in `.zprofile`. See those files' comments.
 - **Hardcoded `$HOME` paths (do not delete):** `~/.dartServer`, `~/.dart-tool`,
   `~/.flutter`, `~/.flutter-devtools` (Dart SDK), `~/.codex` (Codex CLI),
-  `~/.expo` (Expo), `~/.swiftpm` (SwiftPM), `~/.claude` + `~/.claude-reckit`
-  (Claude Code profile dirs; see AGENTS.md §0), `~/.local/share/opencode`
+  `~/.expo` (Expo), `~/.swiftpm` (SwiftPM), `~/.local/share/opencode`
   (OpenCode data: auth, db, logs).
 - **Android toolchain** (added 2026-07-06): `~/Android/Sdk` is the full
   Android SDK (Android Studio's default `--sdk_root`, kept after
@@ -47,8 +46,8 @@ fact-checks it like any other doc.
 ## Per-project environment (mise)
 
 - Projects declare runtimes/env in a `mise.toml`: `mise use node@22`, etc.
-- Per-project env via `[env]` (e.g. `GH_CONFIG_DIR`, `NVIM_APPNAME`,
-  `CLAUDE_CONFIG_DIR` for reckit) needs a one-time `mise trust` in that dir.
+- Per-project env via `[env]` (e.g. `GH_CONFIG_DIR`, `NVIM_APPNAME`) needs a
+  one-time `mise trust` in that dir.
 - **Exception — Flutter SDK**: versions managed by `fvm` (Homebrew tap
   `leoafarias/fvm`), not mise. Works alongside mise in `~/work/reckit/`;
   SDKs under `~/.local/share/fvm` (via `FVM_CACHE_PATH` in `.zshrc`).

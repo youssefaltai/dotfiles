@@ -9,19 +9,15 @@
   // --- Instructions loaded into every session --------------------------------
   // memory/MEMORY.md: the memory INDEX (individual memories under memory/ are
   // read on demand; protocol in AGENTS.md §10).
-  // prompts/claude-code-norms.md: behavioral norms ported from Claude Code —
-  // loaded as instructions rather than replacing agent system prompts, so
-  // OpenCode's built-in tool guidance stays intact and JSON-only subagent
-  // contracts still win. Relative paths resolve against this config's dir.
-  "instructions": ["memory/MEMORY.md", "prompts/claude-code-norms.md"],
+  "instructions": ["memory/MEMORY.md"],
 
   // --- Models (DeepSeek direct API; auth in ~/.local/share/opencode/auth.json) ---
   // Main model for sessions. small_model handles cheap internal tasks
   // (session titles, summaries) so they don't burn main-model tokens.
-  "model": "deepseek/deepseek-v4-pro",
+  "model": "deepseek/deepseek-v4-flash",
   "small_model": "deepseek/deepseek-v4-flash",
 
-  // Effort variants ≈ Claude Code's /effort + thinking toggle: cycle with the
+  // Effort variants: cycle with the
   // variant_cycle keybind (ctrl+t). No custom variants needed — the models.dev
   // registry marks deepseek-v4-pro/-flash with reasoning_options (thinking
   // toggle + effort high|max) and OpenCode synthesizes the cycleable variants
@@ -32,117 +28,10 @@
   // just notify when a newer version exists instead of self-updating.
   "autoupdate": "notify",
 
-  // --- Primary agents = Claude Code permission modes -------------------------
-  // Tab / Shift+Tab cycles these, replicating Claude Code's Shift+Tab
-  // permission-mode cycling: default (edits ask) -> accept-edits (edits
-  // auto-approved) -> auto (local free, outward asks) -> plan (read-only).
-  // Subagents in agents/ are unaffected. Per-agent maps rely on MERGE
-  // semantics: agent rules append AFTER the global rules and last-match-wins.
-  // Consequence: any agent map whose base rule ("*") would shadow a global
-  // hard deny must RE-ASSERT that deny after its base rule (see auto + plan).
-  "default_agent": "default",
   "agent": {
-    // built-in build is replaced by "default"/"accept-edits" below
-    "build": { "disable": true },
-    "default": {
-      "mode": "primary",
-      "description": "Standard mode — file edits ask for approval (Claude Code default mode)",
-      "permission": {
-        "edit": {
-          "*": "ask",
-          "~/.ssh/**": "deny",
-          "~/.config/gh/**": "deny",
-          "~/.config/gh-reckit/**": "deny",
-          "~/.config/gh-noon/**": "deny",
-          "**/.env": "deny",
-          "**/.env.*": "deny",
-          "~/.local/share/opencode/auth.json": "deny",
-          "~/.local/share/opencode/context7_key": "deny",
-          "~/.config/opencode/plugins/guard.ts": "deny",
-          "~/.config/claude/hooks/**": "deny",
-          "~/.claude/settings.json": "deny",
-          "~/.claude-reckit/settings.json": "deny"
-        }
-      }
-    },
-    "accept-edits": {
-      "mode": "primary",
-      "description": "Accept-edits mode — edits and filesystem commands auto-approved (Claude Code acceptEdits)",
-      "permission": {
-        // edit falls through to the global map ("*": allow + denies);
-        // bash gets the filesystem verbs on top of the global allowlist.
-        // Claude Code acceptEdits auto-approves the filesystem verbs, incl.
-        // rm — guard.ts still hard-blocks catastrophic/guardrail-targeting rm.
-        "bash": {
-          "mv *": "allow",
-          "rm *": "allow",
-          "rmdir *": "allow"
-        }
-      }
-    },
-    "auto": {
-      "mode": "primary",
-      "description": "Auto mode — local work auto-approved; outward/destructive actions ask (Claude Code auto mode)",
-      // Rule-based approximation of Claude Code's auto-mode classifier: local
-      // edits and commands run freely, outward-facing/irreversible operations
-      // ask, and the hard denies stay hard. guard.ts still blocks the
-      // catastrophic class underneath. NOTE: because the resolved rule list is
-      // last-match-wins and agent rules append AFTER global ones, the broad
-      // "*: allow" would override the global security/claude-auth denies —
-      // they are deliberately re-asserted after it.
-      "permission": {
-        "bash": {
-          "*": "allow",
-          // outward-facing / hard-to-reverse — ask first (AGENTS.md §0)
-          "git push*": "ask",
-          "git reset --hard*": "ask",
-          "git clean*": "ask",
-          "gh pr merge*": "ask",
-          "gh release *": "ask",
-          "gh repo *": "ask",
-          "npm publish*": "ask",
-          "pnpm publish*": "ask",
-          "docker push*": "ask",
-          // re-asserted hard denies (must come after "*": "allow")
-          "security *": "deny",
-          "claude auth *": "deny"
-        }
-      }
-    },
+    // build inherits the global model (flash) — no override needed
     "plan": {
-      // built-in plan agent (keeps its planning prompt); permissions tightened
-      // from ask to a true read-only profile (Claude Code plan mode).
-      "permission": {
-        "edit": "deny",
-        "bash": {
-          "*": "ask",
-          "git status*": "allow",
-          "git log*": "allow",
-          "git diff*": "allow",
-          "git show*": "allow",
-          "git branch*": "allow",
-          "ls *": "allow",
-          "eza *": "allow",
-          "cat *": "allow",
-          "bat *": "allow",
-          "rg *": "allow",
-          "fd *": "allow",
-          "jq *": "allow",
-          "head *": "allow",
-          "tail *": "allow",
-          "wc *": "allow",
-          "grep *": "allow",
-          "find *": "allow",
-          "which *": "allow",
-          "pwd": "allow",
-          "echo *": "allow",
-          // re-asserted hard denies — this map's "*": "ask" appends after the
-          // global denies and would otherwise downgrade them to ask
-          // (last-match-wins; same trap as auto mode).
-          "security *": "deny",
-          "claude auth *": "deny"
-        }
-      }
+      "model": "deepseek/deepseek-v4-pro"
     }
   },
 
@@ -175,7 +64,6 @@
 
 
   // --- Permissions ------------------------------------------------------------
-  // Ported from the Claude Code personal profile's settings.json (allow/deny).
   // NOTE: within each tool's pattern map, the LAST matching rule wins — broad
   // rules first, narrow overrides after.
   "permission": {
@@ -212,14 +100,11 @@
       // guardrail core: guard.ts stays user-maintained (one step removed from
       // agents so no single agent action can defang it); other plugins and the
       // rest of the opencode config are agent-editable.
-      "~/.config/opencode/plugins/guard.ts": "deny",
-      "~/.config/claude/hooks/**": "deny",
-      "~/.claude/settings.json": "deny",
-      "~/.claude-reckit/settings.json": "deny"
+      "~/.config/opencode/plugins/guard.ts": "deny"
     },
     "bash": {
       "*": "ask",
-      // everyday tools — ported from the Claude personal profile, then pruned:
+      // everyday tools — pruned:
       // no interactive/pager tools (fzf, zoxide, delta, lazygit) and no bare
       // interpreters (node, npx, python3, uv — they'd run arbitrary code and
       // bypass the read denies without a prompt; allow per-project instead).
@@ -249,8 +134,7 @@
       "pnpm *": "allow",
       "make *": "allow",
       // hard denies (guard.ts additionally blocks obfuscated variants)
-      "security *": "deny",
-      "claude auth *": "deny"
+      "security *": "deny"
     },
     "webfetch": "allow",
     "websearch": "allow",
