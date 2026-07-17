@@ -35,6 +35,8 @@ brew "gemini-cli"
 brew "gh"
 # Syntax-highlighting pager for git and diff output
 brew "git-delta"
+# Audit git repos for secrets
+brew "gitleaks"
 # Open-source video transcoder available for Linux, Mac, and Windows
 brew "handbrake"
 # Lightweight and flexible command-line JSON processor
@@ -108,4 +110,7 @@ vscode "dart-code.dart-code"
 vscode "dart-code.flutter"
 vscode "github.vscode-pull-request-github"
 vscode "vscodevim.vim"
-npm "corepack"
+npm "pnpm"
+npm "typescript-language-server"
+npm "typescript"
+npm "vercel"
