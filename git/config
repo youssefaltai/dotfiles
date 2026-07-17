@@ -49,6 +49,16 @@
 	navigate = true
 	line-numbers = true
 
+# --- Company GitHub orgs → company SSH aliases ------------------------------
+# fastfishio is noon's GitHub org — always reach it via the github-noon alias
+# (noon SSH key). Lives in the base config (not config-noon) because clones
+# land outside ~/work/noon (e.g. yarn git-dep clones into ~/.cache/yarn),
+# where the gitdir includeIf below wouldn't apply.
+[url "git@github-noon:fastfishio/"]
+	insteadOf = git@github.com:fastfishio/
+[url "ssh://git@github-noon/fastfishio/"]
+	insteadOf = ssh://git@github.com/fastfishio/
+
 # --- Per-company identity overrides ----------------------------------------
 # Any repo whose path is under ~/work/reckit/ uses the reckit identity, and
 # under ~/work/noon/ uses the noon identity.

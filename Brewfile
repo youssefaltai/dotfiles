@@ -1,6 +1,10 @@
 tap "anomalyco/tap"
+tap "getsentry/tools"
+tap "hostinger/tap"
 tap "leoafarias/fvm", trusted: true
 tap "open-pencil/tap"
+tap "pluk-inc/tap"
+tap "resend/cli"
 # AI pair programming in your terminal
 brew "aider"
 # Improved shell history for zsh, bash, fish and nushell
@@ -37,20 +41,24 @@ brew "handbrake"
 brew "jq"
 # Simple terminal UI for git commands
 brew "lazygit"
+# Fast and powerful Git hooks manager for any type of projects
+brew "lefthook"
+# Postgres C API library
+brew "libpq"
 # Sudoless performance monitoring for Apple Silicon processors
 brew "macmon"
 # Polyglot runtime manager (asdf rust clone)
 brew "mise"
 # Ambitious Vim-fork focused on extensibility and agility
 brew "neovim"
-# Development kit for the Java programming language
-brew "openjdk@17"
 # Search tool like grep and The Silver Searcher
 brew "ripgrep"
 # Cross-shell prompt for astronauts
 brew "starship"
 # Terminal multiplexer
 brew "tmux"
+# Watch files and take action when they change
+brew "watchman"
 # Shell extension to navigate your filesystem faster
 brew "zoxide"
 # Fish-like fast/unobtrusive autosuggestions for zsh
@@ -59,12 +67,22 @@ brew "zsh-autosuggestions"
 brew "zsh-syntax-highlighting"
 # The AI coding agent built for the terminal.
 brew "anomalyco/tap/opencode", trusted: true
+# Sentry command-line client for some generic tasks
+brew "getsentry/tools/sentry-cli", trusted: true
+# Hostinger API CLI
+brew "hostinger/tap/hostinger", trusted: true
+# Command-line interface for Resend
+brew "resend/cli/resend", trusted: true
 # Command-line tools for building and debugging Android apps
 cask "android-commandlinetools"
+# Terminal-based AI coding assistant
+cask "claude-code"
 # OpenAI's coding agent that runs in your terminal
 cask "codex"
 # Brings the power of Copilot coding agent directly to your terminal
 cask "copilot-cli"
+# Write, edit, and chat about your code with AI
+cask "cursor"
 # Voice and text chat software
 cask "discord"
 # Collaborative team software
@@ -76,10 +94,18 @@ cask "ghostty"
 cask "google-chrome"
 # Software for Logitech devices
 cask "logi-options+"
+# Markdown previewer with bundled Quick Look extension
+cask "pluk-inc/tap/markdown-preview", trusted: true
 # Open-source design editor compatible with Figma
 cask "open-pencil/tap/open-pencil", trusted: true
 # Team communication and collaboration software
 cask "slack"
 # Mesh VPN based on WireGuard
 cask "tailscale-app"
+vscode "anysphere.remote-containers"
+vscode "anysphere.remote-ssh"
+vscode "dart-code.dart-code"
+vscode "dart-code.flutter"
+vscode "github.vscode-pull-request-github"
+vscode "vscodevim.vim"
 npm "corepack"
