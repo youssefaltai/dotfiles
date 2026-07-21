@@ -6,16 +6,18 @@ Private, XDG-based configuration for Youssef's macOS machine. This repo **is**
 The operating philosophy — containment, where things go, git identities, the
 `mise` per-project model, and the safety rules — lives in
 [`opencode/AGENTS.md`](opencode/AGENTS.md), the manual for OpenCode (the
-primary agent and system maintainer on this machine). Read that first; this
-README only covers **reproducing the setup on a fresh Mac**.
+primary agent and system maintainer on this machine). The Claude Code profiles
+still read their own copy at [`claude/system.md`](claude/system.md) until the
+migration is finalized. Read `opencode/AGENTS.md` first; this README only
+covers **reproducing the setup on a fresh Mac**.
 
 ---
 
 ## Reproduce on a new Mac
 
 `install.sh` automates the mechanical, idempotent parts. A few steps are
-**manual by design** — SSH private keys are secrets that are (correctly) not
-in this repo.
+**manual by design** — SSH private keys and the Claude login are secrets that are
+(correctly) not in this repo, and the personal Claude account is irreplaceable.
 
 ### 0. Prerequisites (manual, once)
 
@@ -24,7 +26,10 @@ in this repo.
 xcode-select --install
 ```
 
-
+Claude Code itself is **not** installed by `install.sh` (it isn't Homebrew-managed
+on this machine — see the exception in `system.md` §1). If you're not already
+running Claude Code to do this reproduction, install it per Anthropic's current
+docs (docs.claude.com) before continuing; it self-updates afterward.
 
 ### 1. Clone this repo into `~/.config`
 
@@ -49,14 +54,14 @@ It is idempotent — safe to re-run. It will:
 | Homebrew | Install to `/opt/homebrew` if missing |
 | `brew bundle` | Install every package/cask from the `Brewfile` |
 | `mise` | Trust + install the runtimes declared in `mise/config.toml` |
-
+| Claude wiring | Run `claude/bootstrap.sh` (writes `settings.json`, per-profile `CLAUDE.md`, symlinks agents/skills, makes hooks executable) |
 | remote | Switch `origin` from HTTPS to `git@github.com:youssefaltai/dotfiles.git` |
 
 Then **restart your shell** (`exec zsh`) so `ZDOTDIR`, Homebrew, and mise activate.
 
 ### 3. Manual steps the installer intentionally does NOT do
 
-These involve secrets — do them by hand.
+These involve secrets or the irreplaceable account — do them by hand.
 
 #### a. SSH keys (auth + commit signing)
 
@@ -117,7 +122,15 @@ GH_CONFIG_DIR=~/.config/gh-reckit gh auth login # reckit
 GH_CONFIG_DIR=~/.config/gh-noon   gh auth login # noon
 ```
 
-#### d. Flutter SDKs (only if doing reckit mobile work)
+#### d. Claude Code login — ⚠️ IRREPLACEABLE, DO NOT re-login
+
+Per `system.md` §0, the **personal Claude account cannot be recreated**. Never run
+`claude auth login`/`logout` or touch the Keychain item `Claude Code-credentials`.
+The only no-login restore path is the credential blob stored in the Passwords.app
+entry **"Claude Code old account credentials"**. On a genuinely new machine, restore
+from that blob — do not start a fresh login.
+
+#### e. Flutter SDKs (only if doing reckit mobile work)
 
 Managed by `fvm` (installed via the Brewfile's `leoafarias/fvm` tap), not mise:
 
@@ -125,7 +138,7 @@ Managed by `fvm` (installed via the Brewfile's `leoafarias/fvm` tap), not mise:
 fvm install <version>   # per project, as needed
 ```
 
-#### e. OpenCode auth (OpenRouter)
+#### f. OpenCode auth (OpenRouter)
 
 The binary comes from the Brewfile; its config (`opencode/`) is this repo. Only
 the API key is manual: run `opencode`, then `/connect` → **OpenRouter** → paste

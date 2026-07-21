@@ -1,7 +1,7 @@
 tap "anomalyco/tap"
 tap "getsentry/tools"
 tap "hostinger/tap"
-tap "leoafarias/fvm", trusted: true
+tap "leoafarias/fvm", trusted: { formulae: ["fvm"] }
 tap "open-pencil/tap"
 tap "pluk-inc/tap"
 tap "resend/cli"
@@ -53,6 +53,8 @@ brew "macmon"
 brew "mise"
 # Ambitious Vim-fork focused on extensibility and agility
 brew "neovim"
+# Development kit for the Java programming language
+brew "openjdk"
 # Search tool like grep and The Silver Searcher
 brew "ripgrep"
 # Cross-shell prompt for astronauts
@@ -67,14 +69,6 @@ brew "zoxide"
 brew "zsh-autosuggestions"
 # Fish shell like syntax highlighting for zsh
 brew "zsh-syntax-highlighting"
-# The AI coding agent built for the terminal.
-brew "anomalyco/tap/opencode", trusted: true
-# Sentry command-line client for some generic tasks
-brew "getsentry/tools/sentry-cli", trusted: true
-# Hostinger API CLI
-brew "hostinger/tap/hostinger", trusted: true
-# Command-line interface for Resend
-brew "resend/cli/resend", trusted: true
 # Command-line tools for building and debugging Android apps
 cask "android-commandlinetools"
 # Terminal-based AI coding assistant
@@ -92,14 +86,14 @@ cask "figma"
 cask "font-jetbrains-mono-nerd-font"
 # Terminal emulator that uses platform-native UI and GPU acceleration
 cask "ghostty"
+# 2D and 3D game engine
+cask "godot"
 # Web browser
 cask "google-chrome"
 # Software for Logitech devices
 cask "logi-options+"
-# Markdown previewer with bundled Quick Look extension
-cask "pluk-inc/tap/markdown-preview", trusted: true
-# Open-source design editor compatible with Figma
-cask "open-pencil/tap/open-pencil", trusted: true
+cask "markdown-preview"
+cask "open-pencil"
 # Team communication and collaboration software
 cask "slack"
 # Mesh VPN based on WireGuard
