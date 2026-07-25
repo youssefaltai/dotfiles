@@ -1,0 +1,20 @@
+# DoLab marcom (company) identity — applied only to repos under
+# ~/work/dolab-marcom/. Only the differences from the personal base;
+# name stays "Youssef".
+#
+# The GitHub account DoLab-marcom keeps its email private, so commits use the
+# GitHub-provided noreply address. That still attributes commits to the account.
+[user]
+	email = 300489642+DoLab-marcom@users.noreply.github.com
+
+# NOTE: no per-company signing key yet. GitHub will not accept the same SSH key
+# on two accounts, so the personal key cannot be reused for verification here.
+# Commits are still signed (with the personal key from the base config) but will
+# show as "Unverified" under DoLab-marcom until a dedicated key exists:
+#
+#   ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_dolab -C "dolab-marcom"
+#   gh ssh-key add ~/.ssh/id_ed25519_dolab.pub --type authentication
+#   gh ssh-key add ~/.ssh/id_ed25519_dolab.pub --type signing
+#
+# then add here:
+#	signingkey = ~/.ssh/id_ed25519_dolab.pub

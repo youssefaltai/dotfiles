@@ -67,3 +67,11 @@
 	path = config-reckit
 [includeIf "gitdir:~/work/noon/"]
 	path = config-noon
+[includeIf "gitdir:~/work/dolab-marcom/"]
+	path = config-dolab-marcom
+[credential "https://github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
