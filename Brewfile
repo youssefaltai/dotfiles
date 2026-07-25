@@ -13,6 +13,8 @@ brew "atuin"
 brew "bat"
 # Yet another cross-platform graphical process/system monitor
 brew "bottom"
+# CLI tool for Cloudflare Workers
+brew "cloudflare-wrangler"
 # Dependency manager for Cocoa projects
 brew "cocoapods"
 # Container runtimes on MacOS (and Linux) with minimal setup
@@ -51,6 +53,8 @@ brew "libpq"
 brew "macmon"
 # Polyglot runtime manager (asdf rust clone)
 brew "mise"
+# Neon CLI tool
+brew "neonctl"
 # Ambitious Vim-fork focused on extensibility and agility
 brew "neovim"
 # Development kit for the Java programming language
@@ -59,10 +63,16 @@ brew "openjdk"
 brew "ripgrep"
 # Cross-shell prompt for astronauts
 brew "starship"
+# Postgres development platform
+brew "supabase"
 # Terminal multiplexer
 brew "tmux"
+# Command-line interface for Vercel
+brew "vercel"
 # Watch files and take action when they change
 brew "watchman"
+# Generate your Xcode project from a spec file and your folder structure
+brew "xcodegen"
 # Shell extension to navigate your filesystem faster
 brew "zoxide"
 # Fish-like fast/unobtrusive autosuggestions for zsh
