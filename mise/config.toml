@@ -1,2 +1,4 @@
 [tools]
 node = "latest"
+"npm:neonctl" = "latest"
+"npm:vercel" = "latest"

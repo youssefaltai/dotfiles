@@ -1,0 +1,528 @@
+#!/usr/bin/env python3
+"""ctx — generate every per-context identity wiring from ~/.config/contexts.toml.
+
+A context is one hat: an employer, a client, or personal work. Each owns a
+directory under ~/work, a git identity, an SSH key, a GitHub account, a Neovim
+config, and a Claude Code profile. Historically each of those was wired by hand
+across six files, which is how dolab-marcom ended up with two of the eight
+pieces done and freelance with none.
+
+This script makes contexts.toml the only place a context is defined, and
+regenerates the derived wiring from it:
+
+    ~/.config/git/config         includeIf + url.insteadOf   (managed block)
+    ~/.config/git/config-<name>  identity                    (whole file)
+    ~/.ssh/config                Host aliases                (managed block)
+    ~/work/<dir>/mise.toml       env + tools switches        (whole file)
+
+Commands
+    ctx list             show every context and where it lives
+    ctx check            report drift and unfinished manual steps
+    ctx sync             show what would change (dry run — writes nothing)
+    ctx sync --apply     write the changes
+    ctx which [path]     which context owns a path (default: cwd)
+    ctx new <name>       append a starter block to contexts.toml
+
+Nothing is written without --apply. Sync is idempotent: running it twice in a
+row produces no diff the second time.
+"""
+
+from __future__ import annotations
+
+import argparse
+import difflib
+import os
+import re
+import subprocess
+import sys
+import tomllib
+from pathlib import Path
+
+HOME = Path.home()
+SPEC = HOME / ".config" / "contexts.toml"
+
+# Text between these markers belongs to this script and is rewritten on every
+# sync. Anything outside them is hand-owned and preserved.
+BEGIN = "# >>> ctx:managed — generated from ~/.config/contexts.toml; do not edit >>>"
+END = "# <<< ctx:managed <<<"
+
+# --- terminal colour, disabled when not a tty or when NO_COLOR is set --------
+_tty = sys.stdout.isatty() and "NO_COLOR" not in os.environ
+
+
+def _c(code: str, s: str) -> str:
+    return f"\033[{code}m{s}\033[0m" if _tty else s
+
+
+def bold(s): return _c("1", s)
+def red(s): return _c("31", s)
+def green(s): return _c("32", s)
+def yellow(s): return _c("33", s)
+def blue(s): return _c("34", s)
+def dim(s): return _c("2", s)
+
+
+# =============================================================================
+# Spec loading
+# =============================================================================
+
+def load_spec() -> tuple[dict, dict]:
+    """Return (defaults, contexts) from contexts.toml."""
+    if not SPEC.exists():
+        die(f"missing spec: {SPEC}")
+    try:
+        data = tomllib.loads(SPEC.read_text())
+    except tomllib.TOMLDecodeError as e:
+        die(f"{SPEC} is not valid TOML: {e}")
+    return data.get("defaults", {}), data.get("contexts", {})
+
+
+def resolve(name: str, raw: dict, defaults: dict) -> dict:
+    """Merge a context over the defaults and derive its paths."""
+    c = {
+        "name_": name,
+        "kind": raw.get("kind", "client"),
+        "base": raw.get("base", False),
+        "user_name": raw.get("name", defaults.get("name", "Youssef")),
+        "email": raw.get("email", "TODO"),
+        "github": raw.get("github", "TODO"),
+        "ssh_alias": raw.get("ssh_alias", f"github-{name}"),
+        "ssh_key": raw.get("ssh_key", f"id_ed25519_{name}"),
+        "signing_key": raw.get("signing_key"),
+        "gh_config": raw.get("gh_config", defaults.get("gh_config", "gh")),
+        "nvim": raw.get("nvim", defaults.get("nvim", "nvim")),
+        "claude": raw.get("claude", defaults.get("claude", "personal")),
+        "stack": raw.get("stack", ""),
+        "strict": raw.get("strict", defaults.get("strict", False)),
+        "orgs": raw.get("orgs", []),
+        "clients": raw.get("clients", []),
+        "tools": raw.get("tools", {}),
+        "env": raw.get("env", {}),
+        # Free-text rationale carried into the generated files. This repo
+        # explains *why* everywhere; generated files must not be the exception.
+        "notes": raw.get("notes", []),
+        "comments": raw.get("comments", {}),
+    }
+    work_root = Path(os.path.expanduser(defaults.get("work_root", "~/work")))
+    c["dir"] = work_root / raw.get("dir", name)
+    c["incomplete"] = c["email"] == "TODO" or c["github"] == "TODO"
+    return c
+
+
+def contexts() -> list[dict]:
+    defaults, raw = load_spec()
+    return [resolve(n, r, defaults) for n, r in raw.items()]
+
+
+def die(msg: str) -> None:
+    print(f"{red('error:')} {msg}", file=sys.stderr)
+    sys.exit(1)
+
+
+# =============================================================================
+# Managed-block splicing
+# =============================================================================
+
+def splice(text: str, block: str) -> str:
+    """Replace the managed block in `text`, or append it if absent.
+
+    Separator whitespace is normalised to exactly one blank line on both sides.
+    Without that the strip_* passes — which remove the managed block before
+    this runs — leave a trailing newline that grows by one on every sync, so
+    `ctx sync` never converges.
+    """
+    body = f"{BEGIN}\n{block.strip()}\n{END}\n"
+    if BEGIN in text and END in text:
+        head = text.split(BEGIN)[0].rstrip("\n")
+        tail = text.split(END, 1)[1].lstrip("\n")
+    else:
+        head, tail = text.rstrip("\n"), ""
+    out = (f"{head}\n\n" if head else "") + body
+    return out + (f"\n{tail}" if tail.strip() else "")
+
+
+def strip_git_sections(text: str, drop: callable) -> str:
+    """Drop whole git-config sections (outside the managed block) matching `drop`.
+
+    Lets sync absorb hand-written includeIf/url blocks the first time it runs,
+    instead of generating duplicates alongside them.
+    """
+    head, managed, tail = _split_managed(text)
+    out, keep = [], True
+    for line in (head + tail).splitlines(keepends=True):
+        if line.startswith("["):
+            keep = not drop(line)
+        if keep:
+            out.append(line)
+    return "".join(out)
+
+
+def strip_ssh_hosts(text: str, aliases: set[str]) -> str:
+    """Drop top-level `Host <alias>` stanzas (outside the managed block)."""
+    head, managed, tail = _split_managed(text)
+    out, keep = [], True
+    for line in (head + tail).splitlines(keepends=True):
+        m = re.match(r"^\s*Host\s+(.+?)\s*$", line, re.IGNORECASE)
+        if m and not line[0].isspace():
+            keep = not any(h in aliases for h in m.group(1).split())
+        if keep:
+            out.append(line)
+    return "".join(out)
+
+
+def _split_managed(text: str) -> tuple[str, str, str]:
+    if BEGIN in text and END in text:
+        head, rest = text.split(BEGIN, 1)
+        managed, tail = rest.split(END, 1)
+        return head, managed, tail
+    return text, "", ""
+
+
+# =============================================================================
+# Generators — each returns (path, new_content)
+# =============================================================================
+
+def gen_identity(c: dict) -> tuple[Path, str] | None:
+    """~/.config/git/config-<name> — the identity applied under that tree."""
+    if c["base"] or c["incomplete"]:
+        return None
+    lines = [
+        f"# {c['name_']} ({c['kind']}) identity — applied only to repos under {tilde(c['dir'])}/.",
+        "# Generated by `ctx sync` from ~/.config/contexts.toml. Do not edit.",
+    ]
+    if c["notes"]:
+        lines.append("#")
+        lines += [f"# {n}" for n in c["notes"]]
+    lines += ["[user]", f"\temail = {c['email']}"]
+    key = c["signing_key"]
+    if key and (HOME / ".ssh" / key).exists():
+        lines.append(f"\tsigningkey = ~/.ssh/{key}")
+    else:
+        lines += [
+            "",
+            "# No dedicated signing key on disk yet, so commits here are signed with the",
+            "# personal key from the base config and will show as Unverified under",
+            f"# {c['github']}. GitHub refuses the same key on two accounts. Fix with:",
+            f"#   ssh-keygen -t ed25519 -f ~/.ssh/{c['ssh_key']} -C {c['name_']}",
+            f"#   GH_CONFIG_DIR=~/.config/{c['gh_config']} gh ssh-key add ~/.ssh/{key} --type signing",
+        ]
+    return HOME / ".config" / "git" / f"config-{c['name_']}", "\n".join(lines) + "\n"
+
+
+def gen_git_config(cs: list[dict]) -> tuple[Path, str]:
+    """The includeIf + url.insteadOf managed block in ~/.config/git/config."""
+    path = HOME / ".config" / "git" / "config"
+    text = path.read_text() if path.exists() else ""
+
+    managed_dirs = {f"gitdir:{tilde(c['dir'])}/" for c in cs if not c["base"]}
+    text = strip_git_sections(
+        text,
+        lambda ln: (
+            ln.startswith("[includeIf")
+            and any(d in ln for d in managed_dirs)
+        )
+        or (ln.startswith('[url "') and "github-" in ln),
+    )
+
+    out = []
+    for c in cs:
+        for org in c["orgs"]:
+            out += [
+                f"# {org} is {c['name_']}'s GitHub org — always reach it via the",
+                f"# {c['ssh_alias']} alias, including clones that land outside {tilde(c['dir'])}",
+                "# (yarn git-deps clone into ~/.cache/yarn), which is why this lives in the",
+                "# base config rather than the include.",
+                f'[url "git@{c["ssh_alias"]}:{org}/"]',
+                f'\tinsteadOf = git@github.com:{org}/',
+                f'[url "ssh://git@{c["ssh_alias"]}/{org}/"]',
+                f'\tinsteadOf = ssh://git@github.com/{org}/',
+                "",
+            ]
+    out.append("# Per-context identity overrides, innermost path wins.")
+    for c in cs:
+        if c["base"]:
+            continue
+        if c["incomplete"]:
+            out.append(f'# (skipped {c["name_"]}: spec incomplete — see `ctx check`)')
+            continue
+        out += [
+            f'[includeIf "gitdir:{tilde(c["dir"])}/"]',
+            f"\tpath = config-{c['name_']}",
+        ]
+    return path, splice(text, "\n".join(out))
+
+
+def gen_ssh_config(cs: list[dict]) -> tuple[Path, str]:
+    """Host aliases managed block in ~/.ssh/config."""
+    path = HOME / ".ssh" / "config"
+    text = path.read_text() if path.exists() else ""
+    aliases = {c["ssh_alias"] for c in cs}
+    text = strip_ssh_hosts(text, aliases)
+
+    out = []
+    for c in cs:
+        if c["incomplete"]:
+            continue
+        out += [
+            f"# {c['name_']} ({c['kind']}) — GitHub account {c['github']}",
+            f"Host {c['ssh_alias']}",
+            "\tHostName github.com",
+            "\tUser git",
+            f"\tIdentityFile ~/.ssh/{c['ssh_key']}",
+            "\tIdentitiesOnly yes",
+            # Serve the passphrase from the login keychain so it is asked once,
+            # ever, rather than on every push.
+            "\tAddKeysToAgent yes",
+            "\tUseKeychain yes",
+            "",
+        ]
+    return path, splice(text, "\n".join(out))
+
+
+def gen_mise(c: dict) -> tuple[Path, str] | None:
+    """~/work/<dir>/mise.toml — the env switches for the whole context tree.
+
+    Generated whole: TOML forbids duplicate [env]/[tools] headers, so this file
+    cannot be part-managed. Per-repo runtimes belong in that repo's own file.
+    """
+    if c["base"] or c["incomplete"]:
+        return None
+    env = dict(c["env"])
+    if c["gh_config"] != "gh":
+        env["GH_CONFIG_DIR"] = f'{{{{env.HOME}}}}/.config/{c["gh_config"]}'
+    if c["nvim"] != "nvim":
+        env["NVIM_APPNAME"] = c["nvim"]
+    if c["claude"] != "personal":
+        env["CLAUDE_CONFIG_DIR"] = f'{{{{env.HOME}}}}/.claude-{c["claude"]}'
+    if not env and not c["tools"]:
+        return None
+
+    lines = [
+        f"# {tilde(c['dir'])}/ — {c['name_']} ({c['kind']}) context.",
+        "# Applies to every repo underneath. Generated by `ctx sync` from",
+        "# ~/.config/contexts.toml — do not edit; edit the spec and re-sync.",
+        "#",
+        "# Needs a one-time `mise trust` in this directory before [env] takes effect.",
+    ]
+    if c["notes"]:
+        lines.append("#")
+        lines += [f"# {n}" for n in c["notes"]]
+
+    def emit(table: str, items: dict) -> None:
+        if not items:
+            return
+        lines.extend(["", f"[{table}]"])
+        for k, v in items.items():
+            if k in c["comments"]:
+                lines.append(f"# {c['comments'][k]}")
+            key = k if re.fullmatch(r"[A-Za-z0-9_-]+", k) else f'"{k}"'
+            lines.append(f'{key} = "{v}"')
+
+    emit("env", env)
+    emit("tools", c["tools"])
+    return c["dir"] / "mise.toml", "\n".join(lines) + "\n"
+
+
+def tilde(p: Path | str) -> str:
+    s = str(p)
+    return s.replace(str(HOME), "~", 1) if s.startswith(str(HOME)) else s
+
+
+# =============================================================================
+# Commands
+# =============================================================================
+
+def build_plan(cs: list[dict]) -> list[tuple[Path, str]]:
+    plan: list[tuple[Path, str]] = []
+    for c in cs:
+        for g in (gen_identity(c), gen_mise(c)):
+            if g:
+                plan.append(g)
+    plan.append(gen_git_config(cs))
+    plan.append(gen_ssh_config(cs))
+    return plan
+
+
+def cmd_sync(args) -> int:
+    cs = contexts()
+    plan = build_plan(cs)
+    changed = 0
+    for path, new in plan:
+        old = path.read_text() if path.exists() else ""
+        if old == new:
+            continue
+        changed += 1
+        print(bold(f"\n--- {tilde(path)}") + dim("" if path.exists() else "  (new file)"))
+        diff = difflib.unified_diff(
+            old.splitlines(keepends=True), new.splitlines(keepends=True),
+            fromfile="current", tofile="generated", n=2,
+        )
+        for line in diff:
+            if line.startswith("+") and not line.startswith("+++"):
+                print(green(line.rstrip()))
+            elif line.startswith("-") and not line.startswith("---"):
+                print(red(line.rstrip()))
+            elif line.startswith("@@"):
+                print(blue(line.rstrip()))
+        if args.apply:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(new)
+            if path == HOME / ".ssh" / "config":
+                path.chmod(0o600)
+
+    if not changed:
+        print(green("✓ everything already matches contexts.toml"))
+        return 0
+    if args.apply:
+        print(green(f"\n✓ wrote {changed} file(s)"))
+        for c in cs:
+            if not c["base"] and not c["incomplete"]:
+                c["dir"].mkdir(parents=True, exist_ok=True)
+        print(dim("  run `ctx check` for the manual steps that remain"))
+    else:
+        print(yellow(f"\n{changed} file(s) would change. Nothing written."))
+        print(dim("  re-run with --apply to write"))
+    return 0
+
+
+def cmd_check(args) -> int:
+    cs = contexts()
+    problems = 0
+    for c in cs:
+        issues = []
+        if c["incomplete"]:
+            issues.append("spec incomplete — email/github still TODO")
+        if not c["base"]:
+            if not (HOME / ".ssh" / c["ssh_key"]).exists():
+                issues.append(f"no SSH key ~/.ssh/{c['ssh_key']}")
+            gh_dir = HOME / ".config" / c["gh_config"]
+            if not gh_dir.exists():
+                issues.append(
+                    f"no gh profile — GH_CONFIG_DIR={tilde(gh_dir)} gh auth login")
+            if not c["dir"].exists():
+                issues.append(f"work dir missing: {tilde(c['dir'])}")
+        if c["claude"] != "personal" and not (HOME / f".claude-{c['claude']}").exists():
+            issues.append(f"no Claude profile ~/.claude-{c['claude']}")
+        if c["nvim"] != "nvim" and not (HOME / ".config" / c["nvim"]).exists():
+            issues.append(f"no nvim config ~/.config/{c['nvim']}")
+        if c["dir"].exists() and (c["dir"] / "mise.toml").exists():
+            r = subprocess.run(["mise", "trust", "--show"], cwd=c["dir"],
+                               capture_output=True, text=True)
+            if r.returncode != 0:
+                issues.append(f"mise not trusted — run: (cd {tilde(c['dir'])} && mise trust)")
+
+        status = red("✗") if issues else green("✓")
+        print(f"{status} {bold(c['name_']):<22} {dim(c['kind'])}")
+        for i in issues:
+            print(f"    {yellow('•')} {i}")
+        problems += len(issues)
+
+    print()
+    print(green("✓ no outstanding work") if not problems
+          else yellow(f"{problems} item(s) need attention"))
+    return 0
+
+
+def cmd_list(args) -> int:
+    cs = contexts()
+    hdr = f"{'CONTEXT':<16} {'KIND':<10} {'DIR':<26} {'CLAUDE':<10} {'NVIM':<13} STACK"
+    print(bold(hdr))
+    for c in cs:
+        label = c["name_"] + ("*" if c["incomplete"] else "")
+        row = (f"{label:<16} {c['kind']:<10} {tilde(str(c['dir'])):<26} "
+               f"{c['claude']:<10} {c['nvim']:<13} {c['stack']}")
+        print(red(row) if c["incomplete"] else row)
+        for client in c["clients"]:
+            print(dim(f"  └ {client:<14} {'client':<10} {tilde(str(c['dir'] / client))}"))
+    if any(c["incomplete"] for c in cs):
+        print(dim("\n* incomplete — run `ctx check`"))
+    return 0
+
+
+def cmd_which(args) -> int:
+    target = Path(args.path).resolve()
+    best = None
+    for c in contexts():
+        try:
+            target.relative_to(c["dir"].resolve())
+        except (ValueError, OSError):
+            continue
+        if best is None or len(str(c["dir"])) > len(str(best["dir"])):
+            best = c
+    if not best:
+        print(dim(f"{tilde(target)} is not inside any context"))
+        return 1
+    client = ""
+    for cl in best["clients"]:
+        try:
+            target.relative_to((best["dir"] / cl).resolve())
+            client = f" / {cl}"
+        except (ValueError, OSError):
+            pass
+    print(f"{bold(best['name_'] + client)}  {dim(best['kind'])}")
+    print(f"  email   {best['email']}")
+    print(f"  github  {best['github']}  via {best['ssh_alias']}")
+    print(f"  claude  {best['claude']}")
+    print(f"  nvim    {best['nvim']}")
+    print(f"  stack   {best['stack']}")
+    print(f"  rails   {'strict' if best['strict'] else 'relaxed'}")
+    return 0
+
+
+def cmd_new(args) -> int:
+    name = args.name
+    _, raw = load_spec()
+    if name in raw:
+        die(f"context '{name}' already exists in {tilde(SPEC)}")
+    block = f'''
+
+# --- {name} ({args.kind}) ---
+# Added by `ctx new`. Fill in email and github, then run `ctx sync --apply`.
+[contexts."{name}"]
+kind        = "{args.kind}"
+email       = "TODO"
+github      = "TODO"
+ssh_alias   = "github-{name}"
+ssh_key     = "id_ed25519_{name}"
+signing_key = "id_ed25519_{name}.pub"
+gh_config   = "gh-{name}"
+nvim        = "{args.nvim}"
+stack       = "{args.stack}"
+strict      = true
+'''
+    with SPEC.open("a") as f:
+        f.write(block)
+    print(green(f"✓ added [contexts.{name}] to {tilde(SPEC)}"))
+    print(f"  1. edit email + github in {tilde(SPEC)}")
+    print("  2. ctx sync --apply")
+    print("  3. ctx check    # tells you which keys/logins remain")
+    return 0
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(prog="ctx", description=__doc__,
+                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = p.add_subparsers(dest="cmd", required=True)
+
+    sub.add_parser("list", help="show every context")
+    sub.add_parser("check", help="report drift and unfinished manual steps")
+
+    s = sub.add_parser("sync", help="regenerate wiring (dry run unless --apply)")
+    s.add_argument("--apply", action="store_true", help="actually write files")
+
+    w = sub.add_parser("which", help="which context owns a path")
+    w.add_argument("path", nargs="?", default=".")
+
+    n = sub.add_parser("new", help="append a starter context block")
+    n.add_argument("name")
+    n.add_argument("--kind", default="client", choices=["employer", "client", "personal"])
+    n.add_argument("--nvim", default="nvim-webdev")
+    n.add_argument("--stack", default="typescript")
+
+    args = p.parse_args()
+    return {"list": cmd_list, "check": cmd_check, "sync": cmd_sync,
+            "which": cmd_which, "new": cmd_new}[args.cmd](args)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

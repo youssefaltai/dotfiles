@@ -12,14 +12,16 @@ You operate **Youssef's macOS machine**. It is intentionally clean, contained, a
 reproducible. Follow these conventions exactly — they are how the system is meant
 to be run. (This file is shared by both Claude profiles and lives in the dotfiles repo.)
 
-## 0. Safety — never do these (also enforced by a PreToolUse hook)
-- The **personal Claude login is IRREPLACEABLE** — account access was lost and it
-  cannot be recreated. NEVER run `claude auth login`/`logout`, NEVER touch the macOS
-  Keychain item `Claude Code-credentials`, NEVER set `CLAUDE_CODE_OAUTH_TOKEN`.
-- The account-recovery blob (credential + refresh token) lives in the Passwords.app
-  entry **"Claude Code old account credentials"** (full JSON in its notes field) —
-  keep it; it's the only no-login restore path. The former plaintext
-  `~/claude-personal-credentials-BACKUP.json` was removed 2026-06-26.
+## 0. Safety — never do these (some still enforced by a PreToolUse hook)
+- The personal Claude login is a **normal, re-authenticatable account** now (the
+  active Max x20 subscription). The old irreplaceable account is gone; losing this
+  one is no longer catastrophic — it can simply be signed back in. A PreToolUse
+  hook still blocks `claude auth login`/`logout`, the macOS Keychain item
+  `Claude Code-credentials`, and `CLAUDE_CODE_OAUTH_TOKEN`, so those commands fail
+  until the hook is relaxed; don't run them gratuitously, but they are no longer a
+  red line. (History: the account-recovery blob and the removed plaintext backup
+  `~/claude-personal-credentials-BACKUP.json` were for the old account and no
+  longer matter.)
 - Never run catastrophic deletes (`rm -rf ~`, `rm -rf /`, removing `~/.claude*`).
 - Never read secrets into output or commit them: `~/.ssh/*`, gh tokens
   (`~/.config/gh*`), any `.env`.

@@ -11,6 +11,14 @@
 !README.md
 !install.sh
 
+# contexts.toml — the single definition of every context (employer/client/
+# personal). bin/ holds this machine's own scripts; `ctx` generates all the
+# per-context identity wiring from that spec. Both are load-bearing for
+# reproducibility: without them a fresh Mac has no identity switching.
+!contexts.toml
+!bin/
+!bin/**
+
 # zsh (relocated here via ZDOTDIR)
 !zsh/
 !zsh/**
@@ -44,20 +52,9 @@ mise/.mise.toml
 !tmux/
 !tmux/**
 
-
-# opencode (primary agent: operating manual, config, guard plugin, agents, skills)
-# node_modules + package files are runtime state managed by opencode itself
-# (plugin SDK types); they are regenerated, not tracked.
-# memory/ is persistent agent memory — local runtime state, may contain
-# company-work details; deliberately kept out of this personal repo.
-!opencode/
-!opencode/**
-opencode/memory/
-opencode/node_modules/
-opencode/package.json
-opencode/package-lock.json
-opencode/bun.lock
-opencode/.gitignore
+# claude (system manual, bootstrap script, guard hook, statusline, maintenance agent)
+!claude/
+!claude/**
 
 # atuin (shell history sync; config only — encryption key + session token live
 # under ~/.local/share/atuin/, not here)

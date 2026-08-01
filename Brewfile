@@ -1,12 +1,10 @@
 tap "anomalyco/tap"
 tap "getsentry/tools"
 tap "hostinger/tap"
-tap "leoafarias/fvm", trusted: { formulae: ["fvm"] }
+tap "leoafarias/fvm", trusted: true
 tap "open-pencil/tap"
 tap "pluk-inc/tap"
 tap "resend/cli"
-# AI pair programming in your terminal
-brew "aider"
 # Improved shell history for zsh, bash, fish and nushell
 brew "atuin"
 # Clone of cat(1) with syntax highlighting and Git integration
@@ -31,8 +29,6 @@ brew "fd"
 brew "fvm"
 # Command-line fuzzy finder written in Go
 brew "fzf"
-# Interact with Google Gemini AI models from the command-line
-brew "gemini-cli"
 # GitHub command-line tool
 brew "gh"
 # Syntax-highlighting pager for git and diff output
@@ -41,6 +37,8 @@ brew "git-delta"
 brew "gitleaks"
 # Open-source video transcoder available for Linux, Mac, and Windows
 brew "handbrake"
+# Tools and libraries to manipulate images in select formats
+brew "imagemagick"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
 # Simple terminal UI for git commands
@@ -79,16 +77,14 @@ brew "zoxide"
 brew "zsh-autosuggestions"
 # Fish shell like syntax highlighting for zsh
 brew "zsh-syntax-highlighting"
+# Sentry command-line client for some generic tasks
+brew "getsentry/tools/sentry-cli", trusted: true
+# Hostinger API CLI
+brew "hostinger/tap/hostinger", trusted: true
+# Command-line interface for Resend
+brew "resend/cli/resend", trusted: true
 # Command-line tools for building and debugging Android apps
 cask "android-commandlinetools"
-# Terminal-based AI coding assistant
-cask "claude-code"
-# OpenAI's coding agent that runs in your terminal
-cask "codex"
-# Brings the power of Copilot coding agent directly to your terminal
-cask "copilot-cli"
-# Write, edit, and chat about your code with AI
-cask "cursor"
 # Voice and text chat software
 cask "discord"
 # Collaborative team software
@@ -102,18 +98,18 @@ cask "godot"
 cask "google-chrome"
 # Software for Logitech devices
 cask "logi-options+"
-cask "markdown-preview"
-cask "open-pencil"
+# Markdown previewer with bundled Quick Look extension
+cask "pluk-inc/tap/markdown-preview", trusted: true
+# Open-source design editor compatible with Figma
+cask "open-pencil/tap/open-pencil", trusted: true
 # Team communication and collaboration software
 cask "slack"
 # Mesh VPN based on WireGuard
 cask "tailscale-app"
-vscode "anysphere.remote-containers"
-vscode "anysphere.remote-ssh"
-vscode "dart-code.dart-code"
-vscode "dart-code.flutter"
-vscode "github.vscode-pull-request-github"
-vscode "vscodevim.vim"
+# JDK from the Eclipse Foundation (Adoptium)
+cask "temurin"
+# JDK from the Eclipse Foundation (Adoptium)
+cask "temurin@21"
 npm "pnpm"
 npm "typescript-language-server"
 npm "typescript"

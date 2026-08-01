@@ -49,29 +49,32 @@
 	navigate = true
 	line-numbers = true
 
-# --- Company GitHub orgs → company SSH aliases ------------------------------
-# fastfishio is noon's GitHub org — always reach it via the github-noon alias
-# (noon SSH key). Lives in the base config (not config-noon) because clones
-# land outside ~/work/noon (e.g. yarn git-dep clones into ~/.cache/yarn),
-# where the gitdir includeIf below wouldn't apply.
-[url "git@github-noon:fastfishio/"]
-	insteadOf = git@github.com:fastfishio/
-[url "ssh://git@github-noon/fastfishio/"]
-	insteadOf = ssh://git@github.com/fastfishio/
-
-# --- Per-company identity overrides ----------------------------------------
-# Any repo whose path is under ~/work/reckit/ uses the reckit identity, and
-# under ~/work/noon/ uses the noon identity.
-# Add more [includeIf "gitdir:~/work/<company>/"] blocks later as needed.
-[includeIf "gitdir:~/work/reckit/"]
-	path = config-reckit
-[includeIf "gitdir:~/work/noon/"]
-	path = config-noon
-[includeIf "gitdir:~/work/dolab-marcom/"]
-	path = config-dolab-marcom
+# --- GitHub credential helper -----------------------------------------------
+# HTTPS operations authenticate through whichever gh profile GH_CONFIG_DIR
+# selects, so they follow the active context like SSH does.
 [credential "https://github.com"]
 	helper = 
 	helper = !/opt/homebrew/bin/gh auth git-credential
 [credential "https://gist.github.com"]
 	helper = 
 	helper = !/opt/homebrew/bin/gh auth git-credential
+
+# >>> ctx:managed — generated from ~/.config/contexts.toml; do not edit >>>
+# fastfishio is noon's GitHub org — always reach it via the
+# github-noon alias, including clones that land outside ~/work/noon
+# (yarn git-deps clone into ~/.cache/yarn), which is why this lives in the
+# base config rather than the include.
+[url "git@github-noon:fastfishio/"]
+	insteadOf = git@github.com:fastfishio/
+[url "ssh://git@github-noon/fastfishio/"]
+	insteadOf = ssh://git@github.com/fastfishio/
+
+# Per-context identity overrides, innermost path wins.
+[includeIf "gitdir:~/work/reckit/"]
+	path = config-reckit
+[includeIf "gitdir:~/work/noon/"]
+	path = config-noon
+[includeIf "gitdir:~/work/dolab-marcom/"]
+	path = config-dolab-marcom
+# (skipped freelance: spec incomplete — see `ctx check`)
+# <<< ctx:managed <<<

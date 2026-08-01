@@ -1,4 +1,7 @@
-export PATH="$HOME/.local/bin:$PATH"
+# ~/.local/bin holds self-managed binaries (the Claude Code CLI lives here).
+# ~/.config/bin holds this machine's own scripts, versioned in the dotfiles repo
+# — `ctx` (context wiring generator) among them.
+export PATH="$HOME/.config/bin:$HOME/.local/bin:$PATH"
 
 # --- Always in tmux ---------------------------------------------------------
 # Land every interactive terminal inside tmux: attach to the persistent "main"
@@ -10,10 +13,10 @@ export PATH="$HOME/.local/bin:$PATH"
 #   -t 1              stdout is a tty — avoids "not a terminal" from tmux
 #   $NVIM empty       don't hijack a shell spawned inside nvim's :terminal
 #   command -v tmux   no-op if tmux somehow isn't on PATH yet
-if [[ -z "$TMUX" && -o interactive && -t 1 && -z "$NVIM" ]] \
-   && command -v tmux >/dev/null; then
-  exec tmux new-session -A -s main
-fi
+# if [[ -z "$TMUX" && -o interactive && -t 1 && -z "$NVIM" ]] \
+#    && command -v tmux >/dev/null; then
+#   exec tmux new-session -A -s main
+# fi
 # ----------------------------------------------------------------------------
 
 # --- XDG Base Directory spec ------------------------------------------------
@@ -59,11 +62,15 @@ export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
 export DOCKER_CONFIG="$XDG_CONFIG_HOME/docker"
 # ----------------------------------------------------------------------------
 
-# --- Context7 ----------------------------------------------------------------
-# Free API key for context7.com — up-to-date library docs for LLMs.
-# Key stored in opencode's data dir (not in dotfiles).
-export CONTEXT7_API_KEY="$(< "$HOME/.local/share/opencode/context7_key")"
-export EXA_API_KEY="$(< "$HOME/.local/share/opencode/exa_key")"
+# --- API keys (Context7 library docs, Exa search) ---------------------------
+# Consumed by Claude Code MCP servers. Kept in ~/.local/share/machine/keys so
+# they are never committed to the dotfiles repo. Read defensively: an
+# unconditional `$(< file)` on a missing path breaks every new shell, which is
+# exactly what happened when the old opencode data dir was deleted.
+_keydir="$XDG_DATA_HOME/machine/keys"
+[[ -r "$_keydir/context7_key" ]] && export CONTEXT7_API_KEY="$(< "$_keydir/context7_key")"
+[[ -r "$_keydir/exa_key" ]]      && export EXA_API_KEY="$(< "$_keydir/exa_key")"
+unset _keydir
 # ----------------------------------------------------------------------------
 
 # --- CocoaPods --------------------------------------------------------------
@@ -75,15 +82,6 @@ export EXA_API_KEY="$(< "$HOME/.local/share/opencode/exa_key")"
 export CP_HOME_DIR="$XDG_DATA_HOME/cocoapods"
 # ----------------------------------------------------------------------------
 
-# --- GitHub Copilot CLI -----------------------------------------------------
-# Copilot CLI defaults its config/auth to ~/.copilot. COPILOT_HOME replaces the
-# whole path; we set it explicitly because its automatic XDG_CONFIG_HOME support
-# is buggy (creates a dot-prefixed $XDG_CONFIG_HOME/.copilot — github/copilot-cli
-# issue #1750). COPILOT_CACHE_HOME splits ephemeral cache out of the config dir.
-export COPILOT_HOME="$XDG_CONFIG_HOME/copilot"
-export COPILOT_CACHE_HOME="$XDG_CACHE_HOME/copilot"
-# ----------------------------------------------------------------------------
-
 # --- Atuin ------------------------------------------------------------------
 # atuin defaults its log output to ~/.atuin/logs (outside XDG). ATUIN_LOG_DIR
 # redirects logs to XDG_STATE_HOME, keeping $HOME clean. The main config and
@@ -93,29 +91,39 @@ export ATUIN_LOG_DIR="$XDG_STATE_HOME/atuin"
 
 # --- Default editor ---------------------------------------------------------
 # Make Neovim the editor for everything that respects $EDITOR/$VISUAL: git
-# commit/rebase, `Ctrl-X Ctrl-E` to edit the command line in nvim, etc. nvim is
-# brew-managed (containment rule).
+# commit/rebase, `Ctrl-X Ctrl-E` to edit the command line in nvim, Claude Code's
+# external-editor key (Ctrl+G), etc. nvim is brew-managed (containment rule).
 export EDITOR="nvim"
 export VISUAL="nvim"
 # ----------------------------------------------------------------------------
 
-
-
-# --- OpenCode -----------------------------------------------------------------
-# Prevent OpenCode from scanning Claude Code fallback locations (skills, etc.),
-# keeping it fully independent.
-export OPENCODE_DISABLE_CLAUDE_CODE=1
-# Register the built-in `websearch` tool (Exa hosted MCP, no API key). Without
-# this it only exists on the OpenCode provider, and web-searcher agents in the
-# deep-research pipeline have no search tool at all (2026-07-08 incident: they
-# hallucinated search results when the tool came up "Invalid Tool").
-export OPENCODE_ENABLE_EXA=1
+# --- Claude Code profiles ---------------------------------------------------
+# On macOS ALL Claude creds live in the Keychain (NOT in a .credentials.json
+# file -- that's the Linux/headless path). The Keychain service name is:
+#   "Claude Code-credentials-<first 8 hex of sha256(absolute config-dir path)>"
+# The DEFAULT profile (no CLAUDE_CONFIG_DIR) uses the un-suffixed
+# "Claude Code-credentials". CLAUDE_CONFIG_DIR just selects which item is used.
+#   personal -> bare `claude`     (default Keychain item; Max x20 subscription)
+#   reckit   -> ~/.claude-reckit  (its own Keychain item, youssef@goreckit.com)
+# Per-directory switching: ~/work/reckit/mise.toml sets CLAUDE_CONFIG_DIR for
+# the whole reckit tree; everywhere else the personal default applies. noon,
+# dolab-marcom and freelance all run on the personal account. The aliases below
+# are explicit overrides for when you're outside those dirs.
+#
+# Both accounts are normal and re-authenticatable — the old irreplaceable
+# account is gone. A PreToolUse hook still blocks `claude auth login/logout`
+# and the Keychain item, so those fail until the hook is relaxed; that is a
+# guardrail against accidents, not a warning that recovery is impossible.
+#
+# NOTE: CLAUDE_CONFIG_DIR is real but UNDOCUMENTED/unsupported (issue #33430).
+alias claude-personal='env -u CLAUDE_CONFIG_DIR claude'
+alias claude-reckit='CLAUDE_CONFIG_DIR="$HOME/.claude-reckit" claude'
 # ----------------------------------------------------------------------------
 
 # --- mise: runtimes, env vars, tasks (per-project) --------------------------
 # Activates per-directory tool versions + [env] vars. Config is XDG-clean
 # (~/.config/mise, ~/.local/share/mise). Project files with an [env] block
-# (e.g. NVIM_APPNAME) need a one-time `mise trust`.
+# (e.g. NVIM_APPNAME / CLAUDE_CONFIG_DIR switches) need a one-time `mise trust`.
 eval "$(mise activate zsh)"
 # ----------------------------------------------------------------------------
 
@@ -194,3 +202,4 @@ source "$(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
 source "$(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 # ----------------------------------------------------------------------------
 
+export PATH=$PATH:$HOME/.maestro/bin

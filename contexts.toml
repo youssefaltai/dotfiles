@@ -1,0 +1,163 @@
+# =============================================================================
+# contexts.toml — the single definition of every context on this machine.
+#
+# A "context" is one hat: an employer, a client, or personal work. It owns a
+# directory under ~/work, a git identity, an SSH key, a GitHub account, a
+# Neovim config, and a Claude Code profile.
+#
+# This file is the ONLY place a context is defined. `ctx sync` regenerates
+# every piece of derived wiring from it:
+#
+#   ~/.config/git/config         -> includeIf blocks      (managed block)
+#   ~/.config/git/config-<name>  -> identity file         (whole file)
+#   ~/.ssh/config                -> Host alias blocks     (managed block)
+#   ~/work/<dir>/mise.toml       -> env switches          (managed block)
+#
+# Text inside a "ctx:managed" marker is overwritten by `ctx sync`. Everything
+# outside those markers is yours and is preserved untouched.
+#
+# Adding a client is: copy a block, edit five fields, run `ctx sync`, then do
+# the two steps that need a human (upload an SSH key, `gh auth login`).
+# `ctx check` tells you which of those are still outstanding.
+# =============================================================================
+
+[defaults]
+# Applied to every context that does not override them.
+name       = "Youssef"          # git user.name — same across all identities
+work_root  = "~/work"
+nvim       = "nvim"             # NVIM_APPNAME; "nvim" means the base config
+claude     = "personal"         # Claude profile; "personal" = default (~/.claude)
+gh_config  = "gh"               # GH_CONFIG_DIR name under ~/.config
+strict     = false              # true = employer/client rails (see hooks)
+
+
+# --- personal ----------------------------------------------------------------
+# The base identity. It is already the default in ~/.config/git/config, so it
+# gets no includeIf and no config-personal file — `base = true` says so.
+[contexts.personal]
+kind        = "personal"
+base        = true
+email       = "youssef.altai@icloud.com"
+github      = "youssefaltai"
+ssh_alias   = "github.com"
+ssh_key     = "id_ed25519_personal"
+signing_key = "id_ed25519_personal.pub"
+stack       = "typescript"
+
+
+# --- reckit (employer) -------------------------------------------------------
+# Flutter frontend on MeridianV (Forbes Travel Guide luxury travel platform).
+# The only context with its own Claude subscription.
+[contexts.reckit]
+kind        = "employer"
+email       = "youssef@goreckit.com"
+github      = "youssef-goreckit"
+ssh_alias   = "github-reckit"
+ssh_key     = "id_ed25519_reckit"
+signing_key = "id_ed25519_reckit.pub"
+gh_config   = "gh-reckit"
+nvim        = "nvim-flutter"
+claude      = "reckit"          # own login: youssef@goreckit.com
+stack       = "flutter"
+strict      = true
+notes = [
+  "Flutter frontend on MeridianV, Forbes Travel Guide's luxury travel platform.",
+  "nvim loads the Flutter layer (~/.config/nvim-flutter), which sources the base",
+  "config and adds dartls + flutter-tools. Flutter SDKs come from fvm, not mise.",
+  "Claude Code uses ~/.claude-reckit — its own login, settings and history.",
+]
+
+
+# --- noon (employer) ---------------------------------------------------------
+# React Native at noon, the Middle East e-commerce group.
+# Runs on the personal Claude subscription — see machine manual, "Accounts".
+[contexts.noon]
+kind        = "employer"
+email       = "yaltai@noon.com"
+github      = "youssefaltai-noon"
+ssh_alias   = "github-noon"
+ssh_key     = "id_ed25519_noon"
+signing_key = "id_ed25519_noon.pub"
+gh_config   = "gh-noon"
+nvim        = "nvim-webdev"
+stack       = "react-native"
+strict      = true
+# noon's GitHub org. Cloned repos must reach it through the noon SSH alias even
+# when they land outside ~/work/noon (yarn git-deps clone into ~/.cache/yarn),
+# so this generates url.insteadOf rules in the BASE git config, not the include.
+orgs        = ["fastfishio"]
+notes = [
+  "React Native at noon. Node, yarn and the JDK are context-wide because every",
+  "repo here shares them; per-repo pins still go in that repo's own mise.toml.",
+]
+
+# Inline rationale for individual keys, emitted above them in mise.toml.
+[contexts.noon.comments]
+java         = "Gradle needs a JDK; Expo SDK 57 / RN 0.86 target 17"
+ANDROID_HOME = "Android Studio's default path — sdkmanager fights a custom --sdk_root"
+
+# Context-wide runtimes. A context-root mise.toml is generated whole (TOML
+# forbids duplicate [env]/[tools] headers, so it cannot be part-managed), which
+# means anything context-wide must be declared here. Per-repo runtimes still
+# belong in that repo's own mise.toml.
+[contexts.noon.tools]
+node          = "24"
+java          = "temurin-17"      # Gradle needs a JDK for the RN Android build
+"npm:yarn"    = "latest"
+
+[contexts.noon.env]
+ANDROID_HOME  = "{{env.HOME}}/Android/Sdk"   # SDK at the Android Studio default
+
+
+# --- dolab-marcom (client) ---------------------------------------------------
+# Tech lead, solo-developing "Kol Hagty" — a marketing platform and discovery
+# app for Egyptian women.
+#
+# INCOMPLETE: has no dedicated SSH key, so commits are signed with the personal
+# key and show as Unverified under the DoLab-marcom account; and its GitHub
+# account is stacked inside the default gh config instead of its own.
+# `ctx check` reports both. `ctx sync` writes the wiring; you upload the key.
+[contexts."dolab-marcom"]
+kind        = "client"
+email       = "300489642+DoLab-marcom@users.noreply.github.com"
+github      = "DoLab-marcom"
+ssh_alias   = "github-dolab"
+ssh_key     = "id_ed25519_dolab"
+signing_key = "id_ed25519_dolab.pub"
+gh_config   = "gh-dolab"
+nvim        = "nvim-webdev"
+stack       = "react-native"
+strict      = true
+notes = [
+  "Tech lead, solo-developing \"Kol Hagty\" — a marketing platform and discovery",
+  "app for Egyptian women. The DoLab-marcom GitHub account keeps its email",
+  "private, so commits use its GitHub noreply address; that still attributes them",
+  "to the account.",
+]
+
+
+# --- freelance (clients) -----------------------------------------------------
+# One shared identity; each client is a subdirectory of ~/work/freelance.
+# Adding a client costs one directory — no new key, account, or profile.
+#
+# INCOMPLETE: fill in `email`, `github`, and `ssh_key`, then run `ctx sync`.
+# Leave it as-is and `ctx check` will keep reporting it; nothing is generated
+# for a context whose email is still "TODO".
+[contexts.freelance]
+kind        = "client"
+email       = "TODO"
+github      = "TODO"
+ssh_alias   = "github-freelance"
+ssh_key     = "id_ed25519_freelance"
+signing_key = "id_ed25519_freelance.pub"
+gh_config   = "gh-freelance"
+nvim        = "nvim-webdev"
+stack       = "typescript"
+strict      = true
+# Per-client subdirectories. Used for billing/reporting and by `ctx which`;
+# they share the identity above.
+clients     = ["corae-young", "harold-b-smith"]
+notes = [
+  "Freelance clients share one identity; each client is a subdirectory here.",
+  "Adding a client costs a directory, not a new key, account or Claude profile.",
+]

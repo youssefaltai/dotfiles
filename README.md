@@ -5,11 +5,10 @@ Private, XDG-based configuration for Youssef's macOS machine. This repo **is**
 
 The operating philosophy — containment, where things go, git identities, the
 `mise` per-project model, and the safety rules — lives in
-[`opencode/AGENTS.md`](opencode/AGENTS.md), the manual for OpenCode (the
-primary agent and system maintainer on this machine). The Claude Code profiles
-still read their own copy at [`claude/system.md`](claude/system.md) until the
-migration is finalized. Read `opencode/AGENTS.md` first; this README only
-covers **reproducing the setup on a fresh Mac**.
+[`opencode/AGENTS.md`](opencode/AGENTS.md) and, for the Claude Code profiles
+(the primary agent on this machine since 2026-07-16), in
+[`claude/system.md`](claude/system.md). This README only covers
+**reproducing the setup on a fresh Mac**.
 
 ---
 

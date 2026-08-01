@@ -22,44 +22,14 @@ vim.pack.add({
 })
 
 --------------------------------------------------------------------------------
--- LSP attach: buffer-local keymaps + native completion
--- flutter-tools configures the Dart language server itself; we only wire up the
--- editor-side features (Neovim doesn't map LSP keys or enable completion for you).
---------------------------------------------------------------------------------
-local function on_attach(client, bufnr)
-  local function bmap(keys, fn, desc)
-    vim.keymap.set("n", keys, fn, { buffer = bufnr, desc = desc })
-  end
-  bmap("gd", vim.lsp.buf.definition,      "Go to definition")
-  bmap("gD", vim.lsp.buf.declaration,     "Go to declaration")
-  bmap("gi", vim.lsp.buf.implementation,  "Go to implementation")
-  bmap("gr", vim.lsp.buf.references,      "References")
-  bmap("K",  vim.lsp.buf.hover,           "Hover docs")
-  bmap("<leader>rn", vim.lsp.buf.rename,      "Rename symbol")
-  bmap("<leader>ca", vim.lsp.buf.code_action, "Code action")
-  bmap("<leader>d",  vim.diagnostic.open_float, "Line diagnostics")
-  bmap("[d", function() vim.diagnostic.jump({ count = -1 }) end, "Prev diagnostic")
-  bmap("]d", function() vim.diagnostic.jump({ count =  1 }) end, "Next diagnostic")
-
-  -- Built-in LSP autocompletion (Neovim 0.11+), no nvim-cmp/blink needed.
-  if client:supports_method("textDocument/completion") then
-    vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = true })
-  end
-  -- Inline color swatches via the native API (0.12+); replaces flutter-tools'
-  -- deprecated lsp.color option.
-  if client:supports_method("textDocument/documentColor") then
-    vim.lsp.document_color.enable(true, { bufnr = bufnr })
-  end
-end
-
---------------------------------------------------------------------------------
 -- flutter-tools: fvm = true makes it use <project>/.fvm/flutter_sdk, so each
 -- repo's pinned SDK (.fvmrc) is honored — correct for the reckit monorepo.
+-- LSP keymaps and documentColor are handled by the base config's LspAttach
+-- autocmd — no on_attach callback needed here.
 --------------------------------------------------------------------------------
 require("flutter-tools").setup({
   fvm = true,
   lsp = {
-    on_attach = on_attach,
     settings = {
       showTodos = true,
       completeFunctionCalls = true,
