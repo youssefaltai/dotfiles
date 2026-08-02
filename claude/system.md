@@ -198,12 +198,40 @@ on structure, not on good intentions:
   It asserts both that dangerous commands are blocked *and* that ~25 ordinary
   ones are not — a guard with false positives gets disabled, which is worse
   than no guard.
+- **`claude/session-start.sh`** runs at session start and prints the active
+  context, identity, GitHub account, Claude profile and rails — and warns when
+  the active profile does not match what the context expects. It lives beside
+  `statusline.sh` rather than in `hooks/` because `hooks/**` is deny-listed for
+  agent edits. It must never fail a session: every path exits 0.
+- **`permissions.defaultMode` is `acceptEdits`.** Edits apply without
+  prompting; Bash still prompts; the guard blocks destructive operations in
+  every mode. Prompting on each edit bought friction rather than safety, and
+  friction is what pushes people into bypass mode, which is strictly worse.
 - **Blocked is not forbidden.** The guard constrains the agent, not the human.
   Anything it blocks, Youssef can run himself in a terminal.
 - **Report honestly.** State what was verified and how, separately from what was
   assumed. `working-rules.md` governs this and is not optional.
 
 ---
+
+### settings.json is generated, not hand-written
+
+`~/.claude*/settings.json` is produced by `claude/bootstrap.sh` from:
+
+    claude/settings.base.json        shared by every profile
+    claude/settings.personal.json    deltas for ~/.claude
+    claude/settings.reckit.json      deltas for ~/.claude-reckit
+
+merged with `jq` (`.[0] * .[1]`), with `__HOME__` substituted. **Edit the
+templates, never the generated file** — and the generated files are deny-listed
+for agent edits anyway, so only a human running `bootstrap.sh` can refresh them.
+It backs up any existing file whose content differs before overwriting.
+
+This exists because settings.json used to be tracked nowhere, so the most
+behaviour-defining file in the setup was not reproducible — and the two profiles
+had silently drifted (different effort levels and themes, one carrying a model
+pin the other lacked). The only differences now are the ones declared in
+`settings.reckit.json`: `effortLevel: xhigh` and `model: opus[1m]`.
 
 ## 7. Editor
 

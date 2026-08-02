@@ -1,0 +1,8 @@
+{
+  "_comment": [
+    "Deltas applied over settings.base.json for the personal profile only.",
+    "Currently none — the base is the personal profile's configuration. Add",
+    "overrides here rather than editing the generated ~/.claude/settings.json,",
+    "which is deny-listed for agent edits and is not tracked in this repo."
+  ]
+}

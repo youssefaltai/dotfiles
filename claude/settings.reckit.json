@@ -1,0 +1,10 @@
+{
+  "_comment": [
+    "Deltas applied over settings.base.json for the reckit profile only.",
+    "Both values were already live on that profile before the settings were",
+    "consolidated — they are preserved here as deliberate overrides rather than",
+    "flattened away, so the difference is explicit instead of accidental drift."
+  ],
+  "effortLevel": "xhigh",
+  "model": "opus[1m]"
+}
