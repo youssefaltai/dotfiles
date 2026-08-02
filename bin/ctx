@@ -194,9 +194,27 @@ def _split_managed(text: str) -> tuple[str, str, str]:
 # Generators — each returns (path, new_content)
 # =============================================================================
 
-def gen_identity(c: dict) -> tuple[Path, str] | None:
+def base_of(cs: list[dict]) -> dict | None:
+    """The context marked `base = true` — the identity everything inherits."""
+    return next((c for c in cs if c["base"]), None)
+
+
+def overrides_identity(c: dict, cs: list[dict]) -> bool:
+    """Does this context actually differ from the base identity?
+
+    A context that reuses the base email needs no config-<name> file and no
+    includeIf — generating them anyway produces files that override nothing and
+    have to be kept in sync for no benefit. freelance is deliberately like this:
+    the work is committed under the personal account, and the context exists for
+    the directory layout and rails, not for a separate identity.
+    """
+    b = base_of(cs)
+    return not b or c["email"] != b["email"]
+
+
+def gen_identity(c: dict, cs: list[dict]) -> tuple[Path, str] | None:
     """~/.config/git/config-<name> — the identity applied under that tree."""
-    if c["base"] or c["incomplete"]:
+    if c["base"] or c["incomplete"] or not overrides_identity(c, cs):
         return None
     lines = [
         f"# {c['name_']} ({c['kind']}) identity — applied only to repos under {tilde(c['dir'])}/.",
@@ -257,6 +275,9 @@ def gen_git_config(cs: list[dict]) -> tuple[Path, str]:
         if c["incomplete"]:
             out.append(f'# (skipped {c["name_"]}: spec incomplete — see `ctx check`)')
             continue
+        if not overrides_identity(c, cs):
+            out.append(f'# ({c["name_"]} reuses the base identity — nothing to override)')
+            continue
         out += [
             f'[includeIf "gitdir:{tilde(c["dir"])}/"]',
             f"\tpath = config-{c['name_']}",
@@ -272,9 +293,16 @@ def gen_ssh_config(cs: list[dict]) -> tuple[Path, str]:
     text = strip_ssh_hosts(text, aliases)
 
     out = []
+    seen: set[str] = set()
     for c in cs:
         if c["incomplete"]:
             continue
+        # Several contexts may share one alias (freelance reuses github.com).
+        # Emitting it twice produces a duplicate Host stanza and ssh silently
+        # honours only the first, which is a confusing way to lose a key.
+        if c["ssh_alias"] in seen:
+            continue
+        seen.add(c["ssh_alias"])
         out += [
             f"# {c['name_']} ({c['kind']}) — GitHub account {c['github']}",
             f"Host {c['ssh_alias']}",
@@ -347,7 +375,7 @@ def tilde(p: Path | str) -> str:
 def build_plan(cs: list[dict]) -> list[tuple[Path, str]]:
     plan: list[tuple[Path, str]] = []
     for c in cs:
-        for g in (gen_identity(c), gen_mise(c)):
+        for g in (gen_identity(c, cs), gen_mise(c)):
             if g:
                 plan.append(g)
     plan.append(gen_git_config(cs))

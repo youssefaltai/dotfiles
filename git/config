@@ -76,5 +76,5 @@
 	path = config-noon
 [includeIf "gitdir:~/work/dolab-marcom/"]
 	path = config-dolab-marcom
-# (skipped freelance: spec incomplete — see `ctx check`)
+# (freelance reuses the base identity — nothing to override)
 # <<< ctx:managed <<<

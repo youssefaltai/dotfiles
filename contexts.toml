@@ -145,12 +145,17 @@ notes = [
 # for a context whose email is still "TODO".
 [contexts.freelance]
 kind        = "client"
-email       = "TODO"
-github      = "TODO"
-ssh_alias   = "github-freelance"
-ssh_key     = "id_ed25519_freelance"
-signing_key = "id_ed25519_freelance.pub"
-gh_config   = "gh-freelance"
+# Deliberately the personal identity: freelance work is committed as
+# youssefaltai. Because email/ssh_alias/gh_config all match the base context,
+# `ctx sync` generates no identity file, no includeIf and no Host alias for it —
+# there is nothing to override. What the context still buys is the directory
+# layout, per-client subdirectories, nvim-webdev, and strict rails.
+email       = "youssef.altai@icloud.com"
+github      = "youssefaltai"
+ssh_alias   = "github.com"
+ssh_key     = "id_ed25519_personal"
+signing_key = "id_ed25519_personal.pub"
+gh_config   = "gh"
 nvim        = "nvim-webdev"
 stack       = "typescript"
 strict      = true
