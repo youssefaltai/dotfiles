@@ -20,47 +20,11 @@ if [[ -n "${TMUX_AUTOATTACH:-}" && -z "$TMUX" && -o interactive && -t 1 && -z "$
 fi
 # ----------------------------------------------------------------------------
 
-# --- XDG Base Directory spec ------------------------------------------------
-# Funnel all app config/data/state/cache into predictable dirs so $HOME stays
-# clean and your whole setup = one ~/.config folder (your dotfiles repo).
-export XDG_CONFIG_HOME="$HOME/.config"
-export XDG_DATA_HOME="$HOME/.local/share"
-export XDG_STATE_HOME="$HOME/.local/state"
-export XDG_CACHE_HOME="$HOME/.cache"
-# ----------------------------------------------------------------------------
-
-# --- FVM (Flutter Version Management) ---------------------------------------
-# fvm defaults its SDK cache to ~/fvm (non-hidden, clutters $HOME). Redirect it
-# under XDG_DATA_HOME so $HOME stays clean. FVM_CACHE_PATH is the supported var
-# (FVM_HOME is the deprecated legacy fallback). Docs: fvm.app/documentation.
-export FVM_CACHE_PATH="$XDG_DATA_HOME/fvm"
-# ----------------------------------------------------------------------------
-
-# --- Dart / pub cache -------------------------------------------------------
-# Dart & Flutter download packages into ~/.pub-cache by default (clutters $HOME,
-# grows large). PUB_CACHE is the officially supported override. Docs:
-# dart.dev/tools/pub/environment-variables. The existing cache was moved here so
-# nothing re-downloads; run `dart pub get` / `flutter pub get` in a project once
-# to repoint its .dart_tool/package_config.json at the new path.
-export PUB_CACHE="$XDG_CACHE_HOME/pub"
-# ----------------------------------------------------------------------------
-
-# --- npm --------------------------------------------------------------------
-# npm ignores XDG: it defaults its cache to ~/.npm and per-user config to
-# ~/.npmrc. The officially documented npm_config_* env vars relocate both under
-# XDG. userconfig points at the file itself (not a dir) and notably can't be set
-# from inside .npmrc. Docs: docs.npmjs.com/cli/v11/using-npm/config.
-export npm_config_cache="$XDG_CACHE_HOME/npm"
-export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
-# ----------------------------------------------------------------------------
-
-# --- Docker -----------------------------------------------------------------
-# The Docker CLI stores config (config.json, contexts/, creds) in ~/.docker by
-# default. DOCKER_CONFIG relocates that directory. Docs:
-# docs.docker.com/reference/cli/docker. (Note: Docker *Desktop* recreates
-# ~/.docker regardless of this var — not an issue here, this machine runs the
-# brew CLI without Desktop.)
-export DOCKER_CONFIG="$XDG_CONFIG_HOME/docker"
+# --- XDG paths and tool relocations -----------------------------------------
+# Moved to ~/.config/zsh/env.zsh, sourced from ~/.zshenv, because this file is
+# read ONLY by interactive shells. Anything launched otherwise — a script, an
+# IDE build task, a launchd job — never saw them, so those tools kept writing
+# to ~/.npm, ~/.pub-cache and friends while `ls ~` looked clean.
 # ----------------------------------------------------------------------------
 
 # --- API keys (Context7 library docs, Exa search) ---------------------------
@@ -72,39 +36,6 @@ _keydir="$XDG_DATA_HOME/machine/keys"
 [[ -r "$_keydir/context7_key" ]] && export CONTEXT7_API_KEY="$(< "$_keydir/context7_key")"
 [[ -r "$_keydir/exa_key" ]]      && export EXA_API_KEY="$(< "$_keydir/exa_key")"
 unset _keydir
-# ----------------------------------------------------------------------------
-
-# --- Gradle -----------------------------------------------------------------
-# Gradle defaults its home to ~/.gradle (caches, daemon, jdks, wrapper dists —
-# it grows to tens of GB). GRADLE_USER_HOME is the supported override. The
-# existing home was moved here, so nothing re-downloads and gradle.properties
-# (which holds the Android upload-signing config) came with it.
-# Docs: docs.gradle.org/current/userguide/directory_layout.html
-export GRADLE_USER_HOME="$XDG_DATA_HOME/gradle"
-# ----------------------------------------------------------------------------
-
-# --- CocoaPods --------------------------------------------------------------
-# CocoaPods stores its specs repos, cache and templates in ~/.cocoapods by
-# default. CP_HOME_DIR relocates that whole tree (source: lib/cocoapods/
-# config.rb -> ENV['CP_HOME_DIR']); granular CP_CACHE_DIR/CP_REPOS_DIR also
-# exist. It's data-like, so it lives under XDG_DATA_HOME. Existing dir moved
-# here so nothing re-downloads.
-export CP_HOME_DIR="$XDG_DATA_HOME/cocoapods"
-# ----------------------------------------------------------------------------
-
-# --- Atuin ------------------------------------------------------------------
-# atuin defaults its log output to ~/.atuin/logs (outside XDG). ATUIN_LOG_DIR
-# redirects logs to XDG_STATE_HOME, keeping $HOME clean. The main config and
-# DB stay at ~/.config/atuin and ~/.local/share/atuin respectively.
-export ATUIN_LOG_DIR="$XDG_STATE_HOME/atuin"
-# ----------------------------------------------------------------------------
-
-# --- Default editor ---------------------------------------------------------
-# Make Neovim the editor for everything that respects $EDITOR/$VISUAL: git
-# commit/rebase, `Ctrl-X Ctrl-E` to edit the command line in nvim, Claude Code's
-# external-editor key (Ctrl+G), etc. nvim is brew-managed (containment rule).
-export EDITOR="nvim"
-export VISUAL="nvim"
 # ----------------------------------------------------------------------------
 
 # --- Claude Code profiles ---------------------------------------------------

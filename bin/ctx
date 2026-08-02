@@ -106,6 +106,18 @@ def resolve(name: str, raw: dict, defaults: dict) -> dict:
     work_root = Path(os.path.expanduser(defaults.get("work_root", "~/work")))
     c["dir"] = work_root / raw.get("dir", name)
     c["incomplete"] = c["email"] == "TODO" or c["github"] == "TODO"
+
+    # Values land verbatim inside generated git/ssh/mise config. A newline would
+    # inject arbitrary directives (a fabricated `signingkey`, an extra `Host`);
+    # a quote or backslash would produce a file that silently fails to parse.
+    # contexts.toml is self-authored so this is a correctness guard, not a
+    # security boundary — but a broken ~/.ssh/config is expensive either way.
+    for field in ("user_name", "email", "github", "ssh_alias", "ssh_key",
+                  "signing_key", "gh_config", "nvim", "claude"):
+        v = c.get(field)
+        if isinstance(v, str) and re.search(r'[\n\r"\'\\]', v):
+            die(f"context '{name}': field '{field}' contains a newline, quote "
+                f"or backslash, which would corrupt generated config: {v!r}")
     return c
 
 
@@ -366,9 +378,13 @@ def cmd_sync(args) -> int:
                 print(blue(line.rstrip()))
         if args.apply:
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(new)
-            if path == HOME / ".ssh" / "config":
-                path.chmod(0o600)
+            # Write atomically. A half-written ~/.ssh/config or git config locks
+            # you out of every remote, and an interrupted write is exactly when
+            # you least want to be debugging one.
+            tmp = path.with_name(path.name + ".ctx-tmp")
+            tmp.write_text(new)
+            tmp.chmod(0o600 if path == HOME / ".ssh" / "config" else 0o644)
+            os.replace(tmp, path)
 
     if not changed:
         print(green("✓ everything already matches contexts.toml"))
@@ -406,10 +422,26 @@ def cmd_check(args) -> int:
         if c["nvim"] != "nvim" and not (HOME / ".config" / c["nvim"]).exists():
             issues.append(f"no nvim config ~/.config/{c['nvim']}")
         if c["dir"].exists() and (c["dir"] / "mise.toml").exists():
-            r = subprocess.run(["mise", "trust", "--show"], cwd=c["dir"],
-                               capture_output=True, text=True)
-            if r.returncode != 0:
-                issues.append(f"mise not trusted — run: (cd {tilde(c['dir'])} && mise trust)")
+            # Verify the env ACTUALLY applies, rather than that mise is willing
+            # to talk to us. `mise trust --show` exits 0 in trusted AND
+            # untrusted directories — it signals via stdout only — so an
+            # exit-code check silently always passed. Ask the real question:
+            # does `mise env` emit the switches this context declares?
+            want = set()
+            if c["gh_config"] != "gh":
+                want.add("GH_CONFIG_DIR")
+            if c["nvim"] != "nvim":
+                want.add("NVIM_APPNAME")
+            if c["claude"] != "personal":
+                want.add("CLAUDE_CONFIG_DIR")
+            if want:
+                r = subprocess.run(["mise", "env", "-s", "bash"], cwd=c["dir"],
+                                   capture_output=True, text=True)
+                missing = sorted(v for v in want if f"{v}=" not in r.stdout)
+                if missing:
+                    issues.append(
+                        f"mise env not applying {', '.join(missing)} — "
+                        f"run: (cd {tilde(c['dir'])} && mise trust)")
 
         status = red("✗") if issues else green("✓")
         print(f"{status} {bold(c['name_']):<22} {dim(c['kind'])}")

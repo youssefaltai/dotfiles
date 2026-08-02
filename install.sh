@@ -18,11 +18,26 @@ command -v git >/dev/null || { echo "git missing — run: xcode-select --install
 
 # --- 1. ~/.zshenv — the only home dotfile (points ZDOTDIR at ~/.config/zsh) -
 step "~/.zshenv (ZDOTDIR bootstrap)"
+# It must also source env.zsh: zsh reads exactly one .zshenv, and .zshrc is
+# interactive-only, so the XDG relocations have to be pulled in from here or
+# non-interactive tools write straight back into $HOME.
 ZSHENV_BODY='# ~/.zshenv — the only zsh file that must live in $HOME.
-# Bootstraps XDG-based zsh config: point zsh at ~/.config/zsh for everything else.
-export ZDOTDIR="$HOME/.config/zsh"'
-if [ -f "$HOME/.zshenv" ] && grep -q 'ZDOTDIR="$HOME/.config/zsh"' "$HOME/.zshenv"; then
-  skip "already points ZDOTDIR at ~/.config/zsh"
+#
+# zsh reads this for EVERY invocation (scripts, `zsh -c`, login shells,
+# IDE-spawned builds, launchd jobs), and reads it before ZDOTDIR is known —
+# which is why the bootstrap has to live here rather than in ~/.config/zsh.
+#
+# Note that $ZDOTDIR/.zshenv is NOT read afterwards: zsh picks exactly one
+# .zshenv. So anything that must apply to non-interactive shells is sourced
+# explicitly below, rather than left to .zshrc which only interactive shells read.
+export ZDOTDIR="$HOME/.config/zsh"
+
+# XDG paths and the tool-specific relocations (npm, pub, gradle, docker,
+# cocoapods, fvm, atuin). Tracked in the dotfiles repo; its header explains why
+# these cannot live in .zshrc.
+[[ -r "$ZDOTDIR/env.zsh" ]] && source "$ZDOTDIR/env.zsh"'
+if [ -f "$HOME/.zshenv" ] && grep -q 'env.zsh' "$HOME/.zshenv"; then
+  skip "already sources env.zsh"
 else
   printf '%s\n' "$ZSHENV_BODY" > "$HOME/.zshenv"
   echo "    written"
@@ -95,7 +110,11 @@ Automated setup complete. Restart your shell:  exec zsh
 Remaining MANUAL steps (secrets and logins) — see README.md §3:
   a. SSH keys   : ssh-keygen per context, then upload each to its GitHub account
                   as BOTH an authentication and a signing key
-  b. gh login   : GH_CONFIG_DIR=~/.config/gh-<ctx> gh auth login  (per context)
+  b. gh login   : GH_CONFIG_DIR=~/.config/gh-<ctx> gh auth login
+                  Run this once per context — personal, reckit, noon, dolab,
+                  freelance. Each needs its OWN login; do not copy hosts.yml
+                  between profiles, because the token lives in the Keychain and
+                  the copy ends up sharing one entry with the source profile.
   c. Claude     : claude  (personal), then the reckit profile
   d. fvm install <version>   (only for reckit Flutter work)
   e. API keys   : ~/.local/share/machine/keys/{context7_key,exa_key}

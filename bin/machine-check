@@ -14,6 +14,13 @@ note() { printf '    \033[33m•\033[0m %s\n' "$1"; issues=$((issues+1)); }
 ok()   { printf '    \033[32m✓\033[0m %s\n' "$1"; }
 head_() { printf '\n\033[1m%s\033[0m\n' "$1"; }
 
+# Keep the launchd log from growing without bound. It is append-only from
+# launchd's side, so trim it here rather than adding a second moving part.
+LOG="$HOME/.local/state/machine-check.log"
+if [ -f "$LOG" ] && [ "$(wc -c < "$LOG" | tr -d ' ')" -gt 524288 ]; then
+  tail -n 300 "$LOG" > "$LOG.trim" 2>/dev/null && mv "$LOG.trim" "$LOG"
+fi
+
 printf '\033[1mmachine-check\033[0m  %s\n' "$(date '+%Y-%m-%d %H:%M')"
 
 # --- 1. Context wiring ------------------------------------------------------
@@ -64,7 +71,9 @@ while IFS= read -r g; do
   [ "$unpushed" != "no-upstream" ] && [ "$unpushed" != "0" ] && msg="${msg}${unpushed} unpushed, "
   [ "$stash" != "0" ] && msg="${msg}${stash} stashed, "
   if [ -n "$msg" ]; then note "$short: ${msg%, }"; found=1; fi
-done < <(find "$HOME/work" -maxdepth 3 -type d -name .git 2>/dev/null)
+  # maxdepth 5, not 3: reckit keeps a worktrees/ tree and freelance nests
+  # clients under the context dir, both of which sit deeper than 3.
+done < <(find "$HOME/work" -maxdepth 5 -type d -name .git 2>/dev/null)
 [ "$found" = "0" ] && ok "every work repo is committed and pushed"
 
 # --- 4. Dotfiles ------------------------------------------------------------
@@ -78,13 +87,31 @@ if git -C "$C" rev-parse '@{u}' >/dev/null 2>&1; then
 fi
 
 # --- 5. Signing material ----------------------------------------------------
+# The backup warning must be RESOLVABLE. An unconditional nag means this script
+# can never report all-clear, and a weekly job that always fails is one you stop
+# reading — which costs more than the warning was worth.
 head_ "Signing keystores"
 KS="$HOME/.local/share/machine/keystores"
+MARKER="$KS/.backup-confirmed"
 if [ -d "$KS" ]; then
-  n=$(find "$KS" -type f 2>/dev/null | wc -l | tr -d ' ')
+  n=$(find "$KS" -type f ! -name '.backup-confirmed' 2>/dev/null | wc -l | tr -d ' ')
   if [ "$n" != "0" ]; then
-    ok "$n keystore(s) present, mode $(stat -f '%Lp' "$KS")"
-    note "keystores have no off-machine backup — losing them means the app can never be updated again"
+    ok "$n keystore(s) present, dir mode $(stat -f '%Lp' "$KS")"
+    if [ -f "$MARKER" ]; then
+      when=$(head -1 "$MARKER" 2>/dev/null)
+      # Nag again if the confirmation is older than a year, or newer keystores
+      # have appeared since it was recorded.
+      if [ -n "$(find "$KS" -type f ! -name '.backup-confirmed' -newer "$MARKER" 2>/dev/null)" ]; then
+        note "a keystore changed since the last backup confirmation ($when)"
+      elif [ -z "$(find "$MARKER" -mtime -365 2>/dev/null)" ]; then
+        note "backup last confirmed $when — over a year ago, re-verify it still exists"
+      else
+        ok "off-machine backup confirmed $when"
+      fi
+    else
+      note "keystores have no confirmed off-machine backup — losing them means the app can never be updated again"
+      printf '        after backing up, record it:  date > ~/.local/share/machine/keystores/.backup-confirmed\n'
+    fi
   fi
 fi
 

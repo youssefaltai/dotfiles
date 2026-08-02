@@ -169,6 +169,13 @@ lists exactly which are outstanding.
 
 ## Day-to-day maintenance
 
+- **One sweep of everything:** `machine-check` — context drift, the guard's test
+  suite, unsaved work across every repo, dotfiles status, keystores, outdated
+  packages, disk. Exits non-zero when something needs attention. Runs weekly via
+  a launchd agent, logging to `~/.local/state/machine-check.log`.
+- **Durable context** about jobs, clients, people and finances lives in
+  `~/work/personal/life` (private repo), not in this one.
+
 - **After installing/removing a brew package:**
   `brew bundle dump --file=~/.config/Brewfile --force`, then commit.
 - **Update everything:** `brew update && brew upgrade && brew cleanup`, regenerate

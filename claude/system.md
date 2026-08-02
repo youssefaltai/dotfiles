@@ -61,8 +61,10 @@ See §6 for the full list of what it blocks and why.
 
 - `~/.config/<tool>/` — every tool config (git, nvim, ghostty, starship, mise,
   atuin, tmux, claude, zsh).
-- `~/.config/bin/` — this machine's own scripts, versioned with the dotfiles.
-  Currently `ctx` (§5). On `PATH` ahead of `~/.local/bin`.
+- `~/.config/bin/` — this machine's own scripts, versioned with the dotfiles:
+  `ctx` (§5) and `machine-check` (§8). On `PATH` ahead of `~/.local/bin`.
+- `~/.config/zsh/env.zsh` — XDG paths and tool relocations, sourced from
+  `~/.zshenv` so they apply to **every** zsh, not just interactive ones.
 - `~/.config/zsh/.zshrc` + `.zprofile` — shell config (relocated via `ZDOTDIR`;
   `~/.zshenv` is the only home dotfile).
 - `~/.local/share/machine/keys/` — API keys read by the shell (Context7, Exa).
@@ -74,11 +76,27 @@ See §6 for the full list of what it blocks and why.
 - Temp/scratch goes in a tmp dir, never in `~` or `~/.config`.
 
 **Tools that ignore XDG** are pinned to XDG paths by env vars in
-`~/.config/zsh/.zshrc`: npm (`npm_config_cache`, `NPM_CONFIG_USERCONFIG`),
+**`~/.config/zsh/env.zsh`**: npm (`npm_config_cache`, `NPM_CONFIG_USERCONFIG`),
 Dart/pub (`PUB_CACHE`), Docker (`DOCKER_CONFIG`), CocoaPods (`CP_HOME_DIR`),
-atuin (`ATUIN_LOG_DIR`), fvm (`FVM_CACHE_PATH`), Gradle (`GRADLE_USER_HOME` →
-`~/.local/share/gradle`, 14 GB). macOS shell-session save is off via
-`SHELL_SESSIONS_DISABLE=1` in `.zprofile`.
+atuin (`ATUIN_LOG_DIR`), fvm (`FVM_CACHE_PATH`), Gradle (`GRADLE_USER_HOME`).
+macOS shell-session save is off via `SHELL_SESSIONS_DISABLE=1` in `.zprofile`.
+
+**These must stay in `env.zsh`, never `.zshrc`.** `.zshrc` is read only by
+interactive shells. When these lived there the machine looked clean to you and
+was invisible to everything else — measured 2026-08-02, `~/.npm` held 9,555
+files modified in the previous month and `~/.pub-cache` 35,145, because scripts,
+IDE build tasks and launchd jobs never saw the variables.
+
+**Known limit**: GUI apps launched from Finder or the Dock (Xcode, Android
+Studio) inherit their environment from launchd, not from any shell, so they
+still ignore these. Xcode in particular writes `~/Library/Developer` regardless.
+Fixing that needs `launchctl setenv` at login; not currently done.
+
+**Unresolved duplication**: `~/.colima` (9.4 GB, live) and `~/.config/colima`
+(7.9 GB, ignored) both exist. colima has native XDG support but only uses it
+when `~/.colima` is absent, and warns about exactly this on every run. Do **not**
+set `COLIMA_HOME` — that would create a third location. Resolve by removing one,
+per colima's own message.
 
 **Documented exceptions that stay in `$HOME`** (the tool hardcodes the path and
 offers no override):
@@ -90,6 +108,14 @@ offers no override):
 | `~/.swiftpm` | Only per-invocation flags exist (swift-package-manager#6204) |
 | `~/Android/Sdk` | Android Studio default; `sdkmanager` fights a custom `--sdk_root` |
 | `~/.android`, `~/.config/.android` | AVDs (`pixel8`) + adb keys |
+
+**`$HOME` is not as clean as this table implies.** As of 2026-08-02 it holds 38
+hidden entries against ~11 documented here. The rest are small strays left by
+tools that ran once (`.app-store`, `.appstoreconnect`, `.hawtjni`, `.storybook`,
+`.supabase`, `.yarn`, `.maestro`, `.sentryclirc`, `.expo`, `.private-keys`) plus
+caches whose relocation only took effect for interactive shells until `env.zsh`
+existed. Treat the table as *intended* state and `ls -A ~` as actual; when they
+disagree, one of them is a bug worth fixing rather than documenting.
 
 **Signing material**: `~/.local/share/machine/keystores/` (dir `0700`, files
 `0600`) holds Android release keystores — currently `kolhagty-upload.jks`,
@@ -181,18 +207,54 @@ ever. `mise` `[env]` blocks need a one-time `mise trust` in that directory.
 
 ---
 
+## 5b. Life context — `~/work/personal/life`
+
+A private repo (`github.com/youssefaltai/life`) holding durable context about
+work and life, so Claude operates as a driver rather than being re-briefed every
+session:
+
+| Path | What |
+|---|---|
+| `contexts/` | One file per job or client — stack, people, conventions, current focus |
+| `people/` | Colleagues, clients, contacts |
+| `finance/` | Income, rates, invoices, obligations |
+| `goals/` | Targets and review cadence |
+| `routines/` | Daily/weekly commitments, including `salah.md` |
+| `journal/` | Decisions and retrospectives, `YYYY-MM-DD-slug.md` |
+
+**Read the relevant file there before asking about something that ought to be
+known already.** Update it when something durable changes. Absolute dates only;
+unknowns marked `TODO:` so they stay greppable. It holds **no credentials** —
+those live in the Keychain, `~/.ssh`, and `~/.local/share/machine/`.
+
+---
+
 ## 6. Delegation — what makes it safe
 
 The point of this setup is that work can be handed off end-to-end. That relies
 on structure, not on good intentions:
 
-- **`claude/hooks/guard.sh`** blocks, by exiting 2: catastrophic `rm`;
-  `rm -rf` outside build/cache dirs; `git reset --hard`, `clean -fd`,
-  `checkout -- .`, `branch -D`, `filter-branch`, reflog expiry; force-push
-  (always in employer/client trees, and plain `--force` anywhere); direct pushes
-  to a shared trunk in employer/client trees; printing or staging secrets;
-  `npm publish`; repo/release deletion; production deploys; destructive DB ops.
-  Strictness follows the context — `~/work/personal` gets more rope.
+- **`claude/hooks/guard.sh`** covers exactly one thing: the intersection of
+  *what `settings.json` auto-approves* and *damage that cannot be undone*.
+  It blocks, by exiting 2: `git reset --hard`, `clean -fd`, `checkout -- .`,
+  `branch -D`, `filter-branch`, reflog expiry; force-push including the bare
+  `+refspec` form; direct pushes to a shared trunk in employer/client trees;
+  `git add` of secrets; `gh repo/release/secret delete`; `npm publish`;
+  `find -delete`/`-exec rm`; and shell writes to the hooks, statusline or
+  `settings.json`. Strictness follows the context.
+
+  **What it deliberately does NOT cover, and why**: `rm`, `dd`, `mkfs`,
+  production deploys and destructive DB commands are *not* in the allow-list, so
+  Claude Code already prompts and a human sees them. Guarding them again bought
+  nothing and cost false positives — the previous version blocked writing a test
+  file because the file *contained* the string `git reset --hard`. Matching now
+  ignores quoted spans for the same reason. A guard with false positives gets
+  switched off, which is worse than no guard.
+
+  **It is not a security boundary.** Regex over a command string cannot stop
+  deliberate obfuscation, and `Bash(python3 *)`/`Bash(node *)`/`Bash(make *)`
+  run arbitrary code anyway. It is an accident-catcher for a narrow
+  auto-approved surface. The real backstop is git plus the permission prompts.
 - **`claude/hooks/guard.test.sh`** is its test suite. **Run it after any change
   to the guard**: `bash ~/.config/claude/hooks/guard.test.sh ~/.config/claude/hooks/guard.sh`.
   It asserts both that dangerous commands are blocked *and* that ~25 ordinary
