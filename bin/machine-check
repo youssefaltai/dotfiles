@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+# machine-check — one deterministic sweep of everything that silently rots.
+#
+# No LLM, no network beyond `brew outdated`, no side effects. It reports and
+# exits non-zero if anything needs attention, so launchd (or a human) can use
+# the exit code. Deliberately dumb: a scheduled job that quietly stops working
+# is worse than none, so this has no moving parts.
+#
+# Run:  machine-check          (weekly via launchd, or any time by hand)
+
+set -uo pipefail
+issues=0
+note() { printf '    \033[33m•\033[0m %s\n' "$1"; issues=$((issues+1)); }
+ok()   { printf '    \033[32m✓\033[0m %s\n' "$1"; }
+head_() { printf '\n\033[1m%s\033[0m\n' "$1"; }
+
+printf '\033[1mmachine-check\033[0m  %s\n' "$(date '+%Y-%m-%d %H:%M')"
+
+# --- 1. Context wiring ------------------------------------------------------
+head_ "Contexts"
+if command -v ctx >/dev/null 2>&1; then
+  out="$(ctx check 2>&1)"
+  if printf '%s' "$out" | grep -q 'no outstanding work'; then
+    ok "no drift"
+  else
+    printf '%s\n' "$out" | sed 's/^/    /'
+    issues=$((issues+1))
+  fi
+else
+  note "ctx not on PATH"
+fi
+
+# --- 2. The guard still works ----------------------------------------------
+head_ "Delegation guard"
+G="$HOME/.config/claude/hooks/guard.sh"
+T="$HOME/.config/claude/hooks/guard.test.sh"
+if [ -x "$G" ] && [ -f "$T" ]; then
+  res="$(bash "$T" "$G" 2>&1 | tail -1)"
+  case "$res" in
+    *"0 failed"*) ok "guard suite: ${res# }" ;;
+    *)            note "guard suite FAILING: ${res# }" ;;
+  esac
+else
+  note "guard or its test suite is missing"
+fi
+
+# --- 3. Work that exists in only one place ----------------------------------
+head_ "Unsaved work"
+found=0
+while IFS= read -r g; do
+  r="${g%/.git}"
+  short="${r#$HOME/work/}"
+  dirty=$(git -C "$r" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+  unpushed=0
+  if git -C "$r" rev-parse '@{u}' >/dev/null 2>&1; then
+    unpushed=$(git -C "$r" rev-list '@{u}..HEAD' --count 2>/dev/null || echo 0)
+  else
+    unpushed="no-upstream"
+  fi
+  stash=$(git -C "$r" stash list 2>/dev/null | wc -l | tr -d ' ')
+  msg=""
+  [ "$dirty" != "0" ] && msg="${msg}${dirty} uncommitted, "
+  [ "$unpushed" = "no-upstream" ] && msg="${msg}branch has no remote, "
+  [ "$unpushed" != "no-upstream" ] && [ "$unpushed" != "0" ] && msg="${msg}${unpushed} unpushed, "
+  [ "$stash" != "0" ] && msg="${msg}${stash} stashed, "
+  if [ -n "$msg" ]; then note "$short: ${msg%, }"; found=1; fi
+done < <(find "$HOME/work" -maxdepth 3 -type d -name .git 2>/dev/null)
+[ "$found" = "0" ] && ok "every work repo is committed and pushed"
+
+# --- 4. Dotfiles ------------------------------------------------------------
+head_ "Dotfiles"
+C="$HOME/.config"
+d=$(git -C "$C" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+[ "$d" != "0" ] && note "$d uncommitted change(s) in ~/.config" || ok "committed"
+if git -C "$C" rev-parse '@{u}' >/dev/null 2>&1; then
+  u=$(git -C "$C" rev-list '@{u}..HEAD' --count 2>/dev/null || echo 0)
+  [ "$u" != "0" ] && note "$u unpushed commit(s) in ~/.config" || ok "pushed"
+fi
+
+# --- 5. Signing material ----------------------------------------------------
+head_ "Signing keystores"
+KS="$HOME/.local/share/machine/keystores"
+if [ -d "$KS" ]; then
+  n=$(find "$KS" -type f 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$n" != "0" ]; then
+    ok "$n keystore(s) present, mode $(stat -f '%Lp' "$KS")"
+    note "keystores have no off-machine backup — losing them means the app can never be updated again"
+  fi
+fi
+
+# --- 6. Packages ------------------------------------------------------------
+head_ "Packages"
+if command -v brew >/dev/null 2>&1; then
+  o=$(HOMEBREW_NO_AUTO_UPDATE=1 brew outdated --quiet 2>/dev/null | wc -l | tr -d ' ')
+  [ "$o" -gt 20 ] && note "$o outdated formulae/casks — run the §8 maintenance block" || ok "$o outdated"
+fi
+
+# --- 7. Disk ----------------------------------------------------------------
+head_ "Disk"
+avail=$(df -h / | awk 'NR==2{print $4}')
+pct=$(df / | awk 'NR==2{gsub(/%/,"",$5); print $5}')
+[ "$pct" -gt 85 ] && note "disk ${pct}% used, $avail free" || ok "$avail free"
+
+printf '\n'
+if [ "$issues" -eq 0 ]; then
+  printf '\033[32mAll clear.\033[0m\n'; exit 0
+else
+  printf '\033[33m%d item(s) need attention.\033[0m\n' "$issues"; exit 1
+fi

@@ -19,6 +19,11 @@
 !bin/
 !bin/**
 
+# launchd agents — copied into ~/Library/LaunchAgents by install.sh (launchd
+# does not reliably follow symlinks out of that directory).
+!launchd/
+!launchd/**
+
 # zsh (relocated here via ZDOTDIR)
 !zsh/
 !zsh/**

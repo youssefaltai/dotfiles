@@ -221,7 +221,17 @@ on structure, not on good intentions:
 
 ## 8. Maintenance
 
+**`machine-check`** runs the whole sweep in one command — context drift, the
+guard's test suite, every work repo's uncommitted/unpushed/stashed state,
+dotfiles status, keystore presence, outdated packages, disk. It exits non-zero
+when anything needs attention. A launchd agent
+(`launchd/com.youssef.machine-check.plist`, Mondays 09:00) runs it and appends
+to `~/.local/state/machine-check.log`.
+
 ```sh
+machine-check                                # the sweep
+launchctl kickstart -p gui/$UID/com.youssef.machine-check   # run it now
+
 brew update && brew upgrade && brew cleanup
 brew bundle dump --file=~/.config/Brewfile --force
 

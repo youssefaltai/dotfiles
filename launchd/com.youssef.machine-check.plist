@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Weekly machine-check. Copied (not symlinked — launchd does not reliably
+  follow symlinks out of ~/Library/LaunchAgents) by install.sh.
+
+  Install / reload by hand:
+    cp ~/.config/launchd/com.youssef.machine-check.plist ~/Library/LaunchAgents/
+    launchctl bootout  gui/$UID ~/Library/LaunchAgents/com.youssef.machine-check.plist 2>/dev/null
+    launchctl bootstrap gui/$UID ~/Library/LaunchAgents/com.youssef.machine-check.plist
+
+  Run it right now without waiting for the schedule:
+    launchctl kickstart -p gui/$UID/com.youssef.machine-check
+
+  Output appends to ~/.local/state/machine-check.log.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.youssef.machine-check</string>
+
+  <!-- Absolute path, and PATH set explicitly. A login shell (`zsh -lc`) does
+       NOT source ~/.zshrc, which is where ~/.config/bin joins PATH — so the
+       obvious `zsh -lc machine-check` fails with "command not found" and the
+       job appears to run fine while doing nothing. -->
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/youssef/.config/bin/machine-check</string>
+  </array>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/Users/youssef/.config/bin:/Users/youssef/.local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    <key>HOME</key>
+    <string>/Users/youssef</string>
+  </dict>
+
+  <!-- Monday 09:00. StartCalendarInterval fires on wake if the machine was
+       asleep at the scheduled time, which a plain timer would silently skip. -->
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Weekday</key><integer>1</integer>
+    <key>Hour</key><integer>9</integer>
+    <key>Minute</key><integer>0</integer>
+  </dict>
+
+  <key>StandardOutPath</key>
+  <string>/Users/youssef/.local/state/machine-check.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/youssef/.local/state/machine-check.log</string>
+
+  <key>RunAtLoad</key>
+  <false/>
+  <key>ProcessType</key>
+  <string>Background</string>
+  <key>LowPriorityIO</key>
+  <true/>
+</dict>
+</plist>

@@ -67,8 +67,25 @@ else
 fi
 
 # --- 7. ~/work skeleton ----------------------------------------------------
+# Only the personal tree is created here. Every other context directory is
+# created by `ctx sync --apply` from contexts.toml — creating them by hand is
+# how they end up half-wired.
 step "~/work directory skeleton"
-mkdir -p "$HOME/work/personal" "$HOME/work/reckit" "$HOME/work/noon"
+mkdir -p "$HOME/work/personal"
+
+# --- 8. launchd agents ------------------------------------------------------
+# Copied, not symlinked: launchd does not reliably follow symlinks out of
+# ~/Library/LaunchAgents.
+step "launchd agents"
+mkdir -p "$HOME/Library/LaunchAgents" "$HOME/.local/state"
+for p in "$CFG"/launchd/*.plist; do
+  [ -e "$p" ] || continue
+  label="$(basename "$p" .plist)"
+  cp "$p" "$HOME/Library/LaunchAgents/"
+  launchctl bootout  "gui/$UID" "$HOME/Library/LaunchAgents/$label.plist" 2>/dev/null || true
+  launchctl bootstrap "gui/$UID" "$HOME/Library/LaunchAgents/$label.plist" 2>/dev/null \
+    && echo "    loaded $label" || skip "$label (already loaded?)"
+done
 
 # --- Done ------------------------------------------------------------------
 cat <<'DONE'
