@@ -15,9 +15,10 @@ cat > "$P/CLAUDE.md" <<'EOF'
 @~/.config/claude/system.md
 
 # Profile: PERSONAL
-- Active account: **youssefaltai** (`youssef.altai@icloud.com`). This is the default
-  profile (`~/.claude`). Personal projects live under `~/work/personal/`.
-- The "irreplaceable account" rules in system.md §0 apply to THIS profile above all.
+- Active account: **youssefaltai** (`youssef.altai@icloud.com`), Max x20. This is
+  the default profile (`~/.claude`). Personal projects live under `~/work/personal/`.
+- This subscription also carries noon, dolab-marcom and freelance work — the
+  statusline shows `context·profile` so that is never invisible.
 EOF
 cat > "$R/CLAUDE.md" <<'EOF'
 @~/.config/claude/system.md

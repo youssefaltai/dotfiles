@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # install.sh — reproduce this machine's config on a fresh Mac.
-# Idempotent: safe to re-run. Automates the mechanical parts only; SSH keys,
-# ~/.ssh/config, gh auth, and the (irreplaceable) Claude login are manual — see
-# README.md §3. This script never touches secrets or the Claude credentials.
+# Idempotent: safe to re-run. Automates the mechanical parts only; SSH keys, gh
+# auth and the Claude logins are manual — see README.md §3. Context wiring
+# (git identities, ~/.ssh/config aliases, per-context mise.toml) is generated
+# separately by `ctx sync --apply`, not here.
+# This script never touches secrets or credentials.
 set -euo pipefail
 
 CFG="$HOME/.config"
@@ -73,11 +75,15 @@ cat <<'DONE'
 
 Automated setup complete. Restart your shell:  exec zsh
 
-Remaining MANUAL steps (secrets / irreplaceable account) — see README.md §3:
-  a. SSH keys  : id_ed25519_{personal,reckit,noon}  (restore or ssh-keygen)
-  b. ~/.ssh/config host aliases + ssh-add --apple-use-keychain
-  c. gh auth login  (personal, then reckit, then noon via GH_CONFIG_DIR)
-  d. Claude login   : ⚠ DO NOT re-login — restore from Passwords.app blob only
-  e. fvm install <version>  (only for reckit Flutter work)
-  f. OpenCode auth  : run `opencode`, then /connect → OpenRouter → paste API key
+Remaining MANUAL steps (secrets and logins) — see README.md §3:
+  a. SSH keys   : ssh-keygen per context, then upload each to its GitHub account
+                  as BOTH an authentication and a signing key
+  b. gh login   : GH_CONFIG_DIR=~/.config/gh-<ctx> gh auth login  (per context)
+  c. Claude     : claude  (personal), then the reckit profile
+  d. fvm install <version>   (only for reckit Flutter work)
+  e. API keys   : ~/.local/share/machine/keys/{context7_key,exa_key}
+
+Then wire the contexts — do NOT hand-create them:
+  ctx check          # what is missing
+  ctx sync --apply   # generate git identities, ssh aliases, per-context mise.toml
 DONE

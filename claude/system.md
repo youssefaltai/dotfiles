@@ -1,151 +1,243 @@
 # This machine — operating manual for Claude Code
 
-> **TRANSITION (2026-07-04):** OpenCode + OpenRouter is now this machine's
-> primary agent and system maintainer (`~/.config/opencode/AGENTS.md` is the
-> authoritative manual). Claude Code remains for the reckit (company) profile
-> permanently, and for the personal profile only until the subscription ends
-> (~2026-07-10) — after that, OpenCode's `finalize-claude-migration` skill
-> completes the cutover. Until then this file keeps serving both Claude
-> profiles unchanged.
+You operate **Youssef's macOS machine**. It is intentionally clean, contained,
+and reproducible. Follow these conventions exactly — they are how the system is
+meant to be run.
 
-You operate **Youssef's macOS machine**. It is intentionally clean, contained, and
-reproducible. Follow these conventions exactly — they are how the system is meant
-to be run. (This file is shared by both Claude profiles and lives in the dotfiles repo.)
+This file is the authoritative manual. It is shared by every Claude profile and
+lives in the dotfiles repo (`~/.config`, a private git repo). `README.md` in
+that repo covers only *reproducing the setup on a fresh Mac*; everything about
+how the machine is *operated* lives here.
 
-## 0. Safety — never do these (some still enforced by a PreToolUse hook)
-- The personal Claude login is a **normal, re-authenticatable account** now (the
-  active Max x20 subscription). The old irreplaceable account is gone; losing this
-  one is no longer catastrophic — it can simply be signed back in. A PreToolUse
-  hook still blocks `claude auth login`/`logout`, the macOS Keychain item
-  `Claude Code-credentials`, and `CLAUDE_CODE_OAUTH_TOKEN`, so those commands fail
-  until the hook is relaxed; don't run them gratuitously, but they are no longer a
-  red line. (History: the account-recovery blob and the removed plaintext backup
-  `~/claude-personal-credentials-BACKUP.json` were for the old account and no
-  longer matter.)
-- Never run catastrophic deletes (`rm -rf ~`, `rm -rf /`, removing `~/.claude*`).
-- Never read secrets into output or commit them: `~/.ssh/*`, gh tokens
-  (`~/.config/gh*`), any `.env`.
+**Claude Code is the only AI agent on this machine.** OpenCode, aider, codex,
+gemini-cli, copilot-cli, Cursor and the Claude/ChatGPT desktop apps were all
+removed on 2026-08-02. If you find a reference to any of them in a config, doc,
+or comment, it is stale — delete it.
+
+---
+
+## 0. Safety — never do these
+
+Some of these are enforced by `claude/hooks/guard.sh` (a PreToolUse hook), which
+blocks by exiting 2 and therefore holds even in bypass / auto-accept modes.
+See §6 for the full list of what it blocks and why.
+
+- **Never read secrets into output or commit them**: `~/.ssh/*` private keys,
+  gh tokens (`~/.config/gh*`), any `.env`, `*.jks` / `*.keystore` / `*.p12`,
+  `~/.local/share/machine/keys/*`. Reference the path; never print contents.
+  (`.env.example` / `.sample` / `.template` are committed templates and are fine.)
+- **Never run catastrophic deletes** (`rm -rf ~`, `rm -rf /`, removing `~/.claude*`).
+- **Never force-push in an employer or client repo.** It can destroy a
+  colleague's work and is not recoverable by them.
 - **Confirm before outward-facing or irreversible actions**: pushing, publishing,
-  force-pushing, deleting repos/files you didn't create, renaming remote repos.
+  production deploys, force-pushing, deleting repos or releases, renaming remotes.
+- **Claude auth**: both accounts are normal and re-authenticatable. The old
+  irreplaceable account is gone; that warning is history, and any doc still
+  repeating it is wrong. `guard.sh` still blocks `claude auth login/logout` and
+  the Keychain item — a guardrail against accident, not a statement that
+  recovery is impossible.
+- **The agent must not weaken its own guard.** `settings.json` and
+  `claude/hooks/**` are deny-listed for editing. That is deliberate. Changing
+  them is a human action.
+
+---
 
 ## 1. Containment philosophy
-- **Binaries**: only via Homebrew → `/opt/homebrew`. No random scripts/`.pkg`s.
-  **Exception — Claude Code CLI itself**: installed via Anthropic's native
-  installer, self-managed under `~/.local/share/claude/versions/` (symlinked
-  from `~/.local/bin/claude`), not a Homebrew formula/cask. It self-updates;
-  leave that mechanism alone (do not `brew install claude-code`, which would
-  create a second, conflicting install).
+
+- **Binaries**: only via Homebrew → `/opt/homebrew`. No random scripts or `.pkg`s.
+  - *Exception — the Claude Code CLI*: installed by Anthropic's native installer,
+    self-managed under `~/.local/share/claude/versions/`, symlinked from
+    `~/.local/bin/claude`. It self-updates; leave that alone. Do **not**
+    `brew install claude-code` — that creates a second, conflicting install.
 - **Configs**: under `~/.config` (XDG). `$HOME` stays clean.
 - **Language runtimes**: only via **mise**, per-project. Never `brew install` a
   language for project use; never rely on system python/node.
+  - *Exception — Flutter*: SDK versions come from `fvm` (Homebrew tap
+    `leoafarias/fvm`), not mise. Caches redirect to `~/.local/share/fvm`.
+
+---
 
 ## 2. Where things go
+
 - `~/.config/<tool>/` — every tool config (git, nvim, ghostty, starship, mise,
   atuin, tmux, claude, zsh).
-- `~/.config/zsh/.zshrc` + `.zprofile` — shell config (relocated via ZDOTDIR;
+- `~/.config/bin/` — this machine's own scripts, versioned with the dotfiles.
+  Currently `ctx` (§5). On `PATH` ahead of `~/.local/bin`.
+- `~/.config/zsh/.zshrc` + `.zprofile` — shell config (relocated via `ZDOTDIR`;
   `~/.zshenv` is the only home dotfile).
-- `~/work/<context>/` — ALL projects, one folder per context:
-  - `~/work/personal/` — personal projects (uses the personal git identity, the default).
-  - `~/work/reckit/`   — reckit/company projects (uses the reckit identity override).
-  - `~/work/noon/`     — noon/company projects (uses the noon identity override).
-  - future companies → `~/work/<company>/`.
+- `~/.local/share/machine/keys/` — API keys read by the shell (Context7, Exa).
+  Deliberately outside the dotfiles repo so they are never committed.
+- `~/.local/state/machine-snapshots/` — rollback points (git bundles, config
+  backups) taken before large changes.
+- `~/work/<context>/` — ALL projects, one directory per context. See §5.
 - Temp/scratch goes in a tmp dir, never in `~` or `~/.config`.
-- **Tools that ignore XDG by default** (npm, pub/Dart, Docker CLI, CocoaPods,
-  Copilot CLI) are pinned to XDG dirs via env vars in `~/.config/zsh/.zshrc`
-  (`npm_config_cache`, `NPM_CONFIG_USERCONFIG`, `PUB_CACHE`, `DOCKER_CONFIG`,
-  `CP_HOME_DIR`, `COPILOT_HOME`, `COPILOT_CACHE_HOME`); macOS shell-session save
-  is off via `SHELL_SESSIONS_DISABLE=1` in `.zprofile`. See those files' comments.
-- **Exception — Dart SDK**: `~/.dartServer`, `~/.dart-tool`, `~/.flutter`, and
-  `~/.flutter-devtools` remain in `$HOME`; the Dart SDK hardcodes these paths and
-  ignores any env override. Do not delete them.
-- **Exception — OpenAI Codex CLI**: `~/.codex` remains in `$HOME`; the Codex CLI
-  hardcodes this path with no XDG override. Kept intentionally.
-- **Exception — Expo**: `~/.expo` remains in `$HOME` (Expo Go app cache + state);
-  Expo CLI has no relocation env var (upstream XDG request expo-cli#2274 is open,
-  unimplemented). Small; revisit if that lands.
-- **Exception — SwiftPM**: `~/.swiftpm` remains in `$HOME` (registry config +
-  security fingerprints). SwiftPM exposes only per-invocation `--config-path`/
-  `--cache-path`/`--security-path` flags, no global env var (upstream XDG request
-  swift-package-manager#6204 is open). Typically empty on this machine since RN
-  iOS deps go through CocoaPods; the large SPM cache already lives under
-  `~/Library/Caches/org.swift.swiftpm`.
-- **Exception — Android toolchain** (added 2026-07-06): `~/Android/Sdk` holds the
-  full Android SDK (platform-tools, platforms, build-tools, ndk, emulator, system
-  images) — the Android Studio default location; `avdmanager`/`sdkmanager` fought
-  a custom `--sdk_root`, so it was left there rather than relocated. Referenced by
-  `sdk.dir` in RN Android projects' `android/local.properties` (e.g.
-  `~/work/noon/bappzaar/android/local.properties`). `~/.android` and
-  `~/.config/.android` hold the AVD (`pixel8`) and adb keys — tool defaults, one
-  of them not actually XDG-relocated. `~/.local/share/gradle` is the intended
-  `GRADLE_USER_HOME`, but that env var is **not yet exported** in
-  `~/.config/zsh/.zshrc` (pending Youssef's own edit) — until then Gradle may
-  fall back to `~/.gradle` on a fresh shell.
+
+**Tools that ignore XDG** are pinned to XDG paths by env vars in
+`~/.config/zsh/.zshrc`: npm (`npm_config_cache`, `NPM_CONFIG_USERCONFIG`),
+Dart/pub (`PUB_CACHE`), Docker (`DOCKER_CONFIG`), CocoaPods (`CP_HOME_DIR`),
+atuin (`ATUIN_LOG_DIR`), fvm (`FVM_CACHE_PATH`). macOS shell-session save is off
+via `SHELL_SESSIONS_DISABLE=1` in `.zprofile`.
+
+**Documented exceptions that stay in `$HOME`** (the tool hardcodes the path and
+offers no override):
+
+| Path | Why |
+|---|---|
+| `~/.dartServer`, `~/.dart-tool`, `~/.flutter`, `~/.flutter-devtools` | Dart SDK hardcodes these |
+| `~/.expo` | Expo CLI has no relocation var (expo-cli#2274 open) |
+| `~/.swiftpm` | Only per-invocation flags exist (swift-package-manager#6204) |
+| `~/Android/Sdk` | Android Studio default; `sdkmanager` fights a custom `--sdk_root` |
+| `~/.android`, `~/.config/.android` | AVDs (`pixel8`) + adb keys |
+
+**Known outstanding**: `GRADLE_USER_HOME` is not yet exported, so Gradle falls
+back to `~/.gradle` (~14 GB). `~/.local/share/gradle` is the intended target.
+
+---
 
 ## 3. Tools — prefer these (they are installed)
-`rg` over grep, `fd` over find, `eza` over ls, `bat` over cat, plus `fzf`, `zoxide`
-(`z`), `jq`, `delta` (git pager), `lazygit`, `gh`, `mise`, `atuin`.
+
+`rg` over grep, `fd` over find, `eza` over ls, `bat` over cat, plus `fzf`,
+`zoxide` (`z`), `jq`, `delta` (git pager), `lazygit`, `gh`, `mise`, `atuin`,
+`bottom`, `macmon`, `gitleaks`.
+
+---
 
 ## 4. The dotfiles repo (`~/.config` is a private git repo)
-- `~/.config` is git-tracked → private `github.com/youssefaltai/dotfiles`.
-- It uses an **allowlist** `.gitignore`: everything ignored except explicitly
-  re-included configs. **To track a new config, add `!name/` and `!name/**`** to
-  `~/.config/.gitignore`.
+
+- Tracked → private `github.com/youssefaltai/dotfiles`.
+- It uses an **allowlist** `.gitignore`: everything is ignored except explicitly
+  re-included configs. **To track a new config, add `!name/` and `!name/**`.**
+  Forgetting this is how a load-bearing file silently stays untracked — check
+  `git status` shows it before assuming it is saved.
 - **After installing/removing a brew package**: `brew bundle dump
   --file=~/.config/Brewfile --force`, then commit.
-- Commits from `~/.config` use the personal identity and are SSH-signed. Review
-  `git status` before committing; never stage secrets.
+- Commits use the personal identity and are SSH-signed. Review `git status`
+  before committing; never stage secrets.
 
-## 5. Git identity & accounts (auto-switch by directory)
-- **Personal** (default): `Youssef` / `youssef.altai@icloud.com`, GitHub
-  `youssefaltai`, SSH host `github.com`.
-- **Reckit** (under `~/work/reckit/`): `youssef@goreckit.com`, GitHub
-  `youssef-goreckit`, SSH host alias **`github-reckit`** (clone as
-  `git@github-reckit:youssef-goreckit/<repo>.git`), gh via
-  `GH_CONFIG_DIR=~/.config/gh-reckit`.
-- **Noon** (under `~/work/noon/`): `yaltai@noon.com`, GitHub `youssefaltai-noon`,
-  SSH host alias **`github-noon`** (clone as
-  `git@github-noon:youssefaltai-noon/<repo>.git`), gh via
-  `GH_CONFIG_DIR=~/.config/gh-noon`. Signed by `id_ed25519_noon`. Uses the DEFAULT
-  personal Claude profile (no `CLAUDE_CONFIG_DIR`) and base nvim (React Native, no
-  Flutter layer).
-- Identity switches automatically via `includeIf gitdir:~/work/<company>/`. Commits
-  are SSH-signed; default branch `main`.
-- **Per-profile SSH key** (`id_ed25519_<company>`, used for both auth and signing):
-  add `AddKeysToAgent yes` + `UseKeychain yes` to its `Host github-<company>` block
-  and run `ssh-add --apple-use-keychain ~/.ssh/id_ed25519_<company>` once, so the
-  passphrase is served from the macOS login keychain and never re-prompted.
+---
 
-## 6. Per-project environment (mise)
-- Projects declare runtimes/env in a `mise.toml`: `mise use node@22`, etc.
-- Per-project env via `[env]` (e.g. `CLAUDE_CONFIG_DIR`, `NVIM_APPNAME`,
-  `GH_CONFIG_DIR`) needs a one-time `mise trust` in that dir.
-- **Exception — Flutter SDK**: Flutter SDK versions are managed by `fvm` (installed
-  via the `leoafarias/fvm` Homebrew tap), not mise. `fvm` works alongside mise in
-  `~/work/reckit/` and stores SDKs under `~/.local/share/fvm` (redirected via
-  `FVM_CACHE_PATH` in `.zshrc`).
+## 5. Contexts — identity switching by directory
+
+A **context** is one hat: an employer, a client, or personal work. Each owns a
+directory under `~/work`, a git identity, an SSH key, a GitHub account, a Neovim
+config, and a Claude Code profile.
+
+### `contexts.toml` is the single source of truth
+
+`~/.config/contexts.toml` defines every context. `~/.config/bin/ctx` generates
+all derived wiring from it:
+
+| Generated | What |
+|---|---|
+| `~/.config/git/config` | `includeIf` blocks + `url.insteadOf` (managed block) |
+| `~/.config/git/config-<name>` | the identity |
+| `~/.ssh/config` | `Host` aliases (managed block) |
+| `~/work/<dir>/mise.toml` | `GH_CONFIG_DIR` / `NVIM_APPNAME` / `CLAUDE_CONFIG_DIR` |
+
+```sh
+ctx list             # every context and where it lives
+ctx which [path]     # which context owns a path (default: cwd)
+ctx check            # drift + unfinished manual steps
+ctx sync             # dry run — shows the diff, writes nothing
+ctx sync --apply     # write
+ctx new <name>       # append a starter block
+```
+
+**Never hand-edit inside a `ctx:managed` marker** — `ctx sync` overwrites it.
+Everything outside those markers is preserved. Sync is idempotent: a second run
+is a no-op. Editing wiring directly instead of the spec is how contexts drift.
+
+**Adding a client**: `ctx new <name>` → fill `email` + `github` → `ctx sync
+--apply` → `ctx check` names the two manual steps (upload the SSH key,
+`gh auth login`). That is the whole procedure.
+
+### Current contexts
+
+| Context | Kind | Identity | Claude profile | Stack |
+|---|---|---|---|---|
+| `personal` | personal | `youssef.altai@icloud.com` / `youssefaltai` | personal (default) | TypeScript |
+| `reckit` | employer | `youssef@goreckit.com` / `youssef-goreckit` | **reckit** (own login) | Flutter |
+| `noon` | employer | `yaltai@noon.com` / `youssefaltai-noon` | personal | React Native |
+| `dolab-marcom` | client | GitHub noreply / `DoLab-marcom` | personal | React Native |
+| `freelance` | client | *incomplete* | personal | TypeScript |
+
+### Accounts
+
+There are **two** Claude subscriptions: the personal Max x20 (default profile,
+`~/.claude`) and a Reckit-provided one (`~/.claude-reckit`, `youssef@goreckit.com`).
+**noon, dolab-marcom and freelance all run on the personal subscription.** The
+statusline shows `context·profile` precisely so this is never invisible — e.g.
+`[noon·personal ⚠]` means noon work billing to the personal account.
+
+Per-context SSH keys serve both auth and signing. Each `Host github-<ctx>` block
+carries `AddKeysToAgent yes` + `UseKeychain yes`, so a passphrase is asked once
+ever. `mise` `[env]` blocks need a one-time `mise trust` in that directory.
+
+---
+
+## 6. Delegation — what makes it safe
+
+The point of this setup is that work can be handed off end-to-end. That relies
+on structure, not on good intentions:
+
+- **`claude/hooks/guard.sh`** blocks, by exiting 2: catastrophic `rm`;
+  `rm -rf` outside build/cache dirs; `git reset --hard`, `clean -fd`,
+  `checkout -- .`, `branch -D`, `filter-branch`, reflog expiry; force-push
+  (always in employer/client trees, and plain `--force` anywhere); direct pushes
+  to a shared trunk in employer/client trees; printing or staging secrets;
+  `npm publish`; repo/release deletion; production deploys; destructive DB ops.
+  Strictness follows the context — `~/work/personal` gets more rope.
+- **`claude/hooks/guard.test.sh`** is its test suite. **Run it after any change
+  to the guard**: `bash ~/.config/claude/hooks/guard.test.sh ~/.config/claude/hooks/guard.sh`.
+  It asserts both that dangerous commands are blocked *and* that ~25 ordinary
+  ones are not — a guard with false positives gets disabled, which is worse
+  than no guard.
+- **Blocked is not forbidden.** The guard constrains the agent, not the human.
+  Anything it blocks, Youssef can run himself in a terminal.
+- **Report honestly.** State what was verified and how, separately from what was
+  assumed. `working-rules.md` governs this and is not optional.
+
+---
 
 ## 7. Editor
-- Neovim 0.12, plugins via built-in `vim.pack`. No plugin-manager framework.
-- **Base config**: `~/.config/nvim/init.lua` (lockfile `nvim-pack-lock.json`). Used everywhere.
-- **Flutter layer**: `~/.config/nvim-flutter/init.lua` — sources the base config then adds
-  Dart LSP + flutter-tools. Activated via `NVIM_APPNAME=nvim-flutter` (set by mise in
-  `~/work/reckit/`). Its plugins and state live under `~/.local/share/nvim-flutter`.
 
-## 8. Maintenance routines
-- Update: `brew update && brew upgrade && brew cleanup`, then regenerate the
-  Brewfile and commit.
-- Update nvim plugins (run for both configs; `force = true` skips the interactive
-  confirm buffer that would otherwise hang headlessly):
-  ```
-  nvim --headless "+lua vim.pack.update(nil, { force = true })" +qa
-  NVIM_APPNAME=nvim-flutter nvim --headless "+lua vim.pack.update(nil, { force = true })" +qa
-  ```
-- Keep `~/.config` committed and pushed after meaningful config changes.
+- Neovim 0.12, plugins via built-in `vim.pack`. No plugin-manager framework.
+- **Base config**: `~/.config/nvim/init.lua` (lockfile `nvim-pack-lock.json`).
+- **Layers** that `dofile` the base config and add to it:
+  - `nvim-flutter` — Dart LSP + flutter-tools (reckit).
+  - `nvim-webdev` — web/React Native (noon, dolab-marcom, freelance).
+  Selected per-context by `NVIM_APPNAME`; state lives in
+  `~/.local/share/nvim-<layer>`.
+- Removing a plugin means removing it from `init.lua` **and** from every
+  `nvim-pack-lock.json` — the lockfile alone will reinstall it on next launch.
+
+---
+
+## 8. Maintenance
+
+```sh
+brew update && brew upgrade && brew cleanup
+brew bundle dump --file=~/.config/Brewfile --force
+
+# nvim plugins, all three configs (force skips the interactive confirm buffer
+# that would otherwise hang headlessly)
+nvim --headless "+lua vim.pack.update(nil, { force = true })" +qa
+NVIM_APPNAME=nvim-flutter nvim --headless "+lua vim.pack.update(nil, { force = true })" +qa
+NVIM_APPNAME=nvim-webdev  nvim --headless "+lua vim.pack.update(nil, { force = true })" +qa
+
+ctx check                                    # context drift
+bash ~/.config/claude/hooks/guard.test.sh ~/.config/claude/hooks/guard.sh
+```
+
+Keep `~/.config` committed and pushed after meaningful config changes.
+
+---
 
 ## 9. System specs (this machine)
+
 - **MacBook Pro** (`Mac17,2`) — Apple **M5**, 10 cores (4 performance + 6 efficiency).
-- **32 GB** unified memory, **arm64**.
-- **926 GB** internal SSD.
+- **32 GB** unified memory, **arm64**. **926 GB** SSD.
 - macOS **26.5.1** (build `25F80`).
-- Static snapshot — edit by hand if hardware/OS changes meaningfully
-  (`sysctl -n hw.model machdep.cpu.brand_string hw.memsize` + `sw_vers` to refresh).
+
+Static snapshot — refresh by hand with
+`sysctl -n hw.model machdep.cpu.brand_string hw.memsize` + `sw_vers`.

@@ -3,20 +3,20 @@
 Private, XDG-based configuration for Youssef's macOS machine. This repo **is**
 `~/.config`: it is cloned directly into that path, and `$HOME` stays clean.
 
-The operating philosophy — containment, where things go, git identities, the
-`mise` per-project model, and the safety rules — lives in
-[`opencode/AGENTS.md`](opencode/AGENTS.md) and, for the Claude Code profiles
-(the primary agent on this machine since 2026-07-16), in
-[`claude/system.md`](claude/system.md). This README only covers
-**reproducing the setup on a fresh Mac**.
+The operating philosophy — containment, where things go, contexts and identity
+switching, delegation safety, and the maintenance routines — lives in
+[`claude/system.md`](claude/system.md), the single authoritative manual. This
+README covers only **reproducing the setup on a fresh Mac**.
+
+Claude Code is the only AI agent on this machine (since 2026-08-02).
 
 ---
 
 ## Reproduce on a new Mac
 
 `install.sh` automates the mechanical, idempotent parts. A few steps are
-**manual by design** — SSH private keys and the Claude login are secrets that are
-(correctly) not in this repo, and the personal Claude account is irreplaceable.
+**manual by design** — SSH private keys and account logins are secrets, and are
+(correctly) not in this repo.
 
 ### 0. Prerequisites (manual, once)
 
@@ -60,7 +60,7 @@ Then **restart your shell** (`exec zsh`) so `ZDOTDIR`, Homebrew, and mise activa
 
 ### 3. Manual steps the installer intentionally does NOT do
 
-These involve secrets or the irreplaceable account — do them by hand.
+These involve secrets or interactive logins — do them by hand.
 
 #### a. SSH keys (auth + commit signing)
 
@@ -121,13 +121,17 @@ GH_CONFIG_DIR=~/.config/gh-reckit gh auth login # reckit
 GH_CONFIG_DIR=~/.config/gh-noon   gh auth login # noon
 ```
 
-#### d. Claude Code login — ⚠️ IRREPLACEABLE, DO NOT re-login
+#### d. Claude Code login
 
-Per `system.md` §0, the **personal Claude account cannot be recreated**. Never run
-`claude auth login`/`logout` or touch the Keychain item `Claude Code-credentials`.
-The only no-login restore path is the credential blob stored in the Passwords.app
-entry **"Claude Code old account credentials"**. On a genuinely new machine, restore
-from that blob — do not start a fresh login.
+Two Claude subscriptions, two profiles: the personal Max x20 (default,
+`~/.claude`) and the Reckit-provided one (`~/.claude-reckit`). Both are normal,
+re-authenticatable accounts — sign in normally on a new machine.
+
+`guard.sh` still blocks `claude auth login`/`logout` and the Keychain item, so
+those commands fail until you run them outside Claude Code. That is a guardrail
+against an agent doing it by accident, not a sign that recovery is impossible.
+(Historical note: an earlier, genuinely irreplaceable account is gone; any doc
+still warning about it is stale.)
 
 #### e. Flutter SDKs (only if doing reckit mobile work)
 
@@ -137,21 +141,29 @@ Managed by `fvm` (installed via the Brewfile's `leoafarias/fvm` tap), not mise:
 fvm install <version>   # per project, as needed
 ```
 
-#### f. OpenCode auth (OpenRouter)
+#### f. API keys (Context7 docs, Exa search)
 
-The binary comes from the Brewfile; its config (`opencode/`) is this repo. Only
-the API key is manual: run `opencode`, then `/connect` → **OpenRouter** → paste
-a key from [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys).
-Stored in `~/.local/share/opencode/auth.json` (never tracked here).
+Read by `.zshrc` from `~/.local/share/machine/keys/{context7_key,exa_key}` —
+deliberately outside this repo so they are never committed. Recreate the files
+with keys from [context7.com](https://context7.com) and
+[exa.ai](https://exa.ai); the shell tolerates their absence.
 
-### 4. Directory layout to recreate
+### 4. Contexts
+
+Do **not** create work directories or identity wiring by hand — it is generated:
 
 ```sh
-mkdir -p ~/work/personal ~/work/reckit ~/work/noon
+ctx check          # what is missing
+ctx sync --apply   # create it
 ```
 
-Git identity switches automatically by directory via the `includeIf` blocks in
-[`git/config`](git/config).
+[`contexts.toml`](contexts.toml) is the single definition of every context;
+[`bin/ctx`](bin/ctx) generates the git identities, `includeIf` blocks, SSH host
+aliases and per-context `mise.toml` from it. See `system.md` §5.
+
+Two steps per context stay manual because they need a human: uploading the SSH
+key to GitHub, and `GH_CONFIG_DIR=~/.config/gh-<ctx> gh auth login`. `ctx check`
+lists exactly which are outstanding.
 
 ---
 
