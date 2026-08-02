@@ -66,7 +66,8 @@ See §6 for the full list of what it blocks and why.
 - `~/.config/zsh/.zshrc` + `.zprofile` — shell config (relocated via `ZDOTDIR`;
   `~/.zshenv` is the only home dotfile).
 - `~/.local/share/machine/keys/` — API keys read by the shell (Context7, Exa).
-  Deliberately outside the dotfiles repo so they are never committed.
+- `~/.local/share/machine/keystores/` — app signing keystores (see below).
+  Both are deliberately outside the dotfiles repo so they are never committed.
 - `~/.local/state/machine-snapshots/` — rollback points (git bundles, config
   backups) taken before large changes.
 - `~/work/<context>/` — ALL projects, one directory per context. See §5.
@@ -75,8 +76,9 @@ See §6 for the full list of what it blocks and why.
 **Tools that ignore XDG** are pinned to XDG paths by env vars in
 `~/.config/zsh/.zshrc`: npm (`npm_config_cache`, `NPM_CONFIG_USERCONFIG`),
 Dart/pub (`PUB_CACHE`), Docker (`DOCKER_CONFIG`), CocoaPods (`CP_HOME_DIR`),
-atuin (`ATUIN_LOG_DIR`), fvm (`FVM_CACHE_PATH`). macOS shell-session save is off
-via `SHELL_SESSIONS_DISABLE=1` in `.zprofile`.
+atuin (`ATUIN_LOG_DIR`), fvm (`FVM_CACHE_PATH`), Gradle (`GRADLE_USER_HOME` →
+`~/.local/share/gradle`, 14 GB). macOS shell-session save is off via
+`SHELL_SESSIONS_DISABLE=1` in `.zprofile`.
 
 **Documented exceptions that stay in `$HOME`** (the tool hardcodes the path and
 offers no override):
@@ -89,8 +91,12 @@ offers no override):
 | `~/Android/Sdk` | Android Studio default; `sdkmanager` fights a custom `--sdk_root` |
 | `~/.android`, `~/.config/.android` | AVDs (`pixel8`) + adb keys |
 
-**Known outstanding**: `GRADLE_USER_HOME` is not yet exported, so Gradle falls
-back to `~/.gradle` (~14 GB). `~/.local/share/gradle` is the intended target.
+**Signing material**: `~/.local/share/machine/keystores/` (dir `0700`, files
+`0600`) holds Android release keystores — currently `kolhagty-upload.jks`,
+referenced by absolute path from `$GRADLE_USER_HOME/gradle.properties`. It is
+**not** in any repo and **not** backed up off-machine: losing it means the
+Kol Hagty app can never be updated on Play Store again. Back it up somewhere
+durable.
 
 ---
 

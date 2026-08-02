@@ -73,6 +73,15 @@ _keydir="$XDG_DATA_HOME/machine/keys"
 unset _keydir
 # ----------------------------------------------------------------------------
 
+# --- Gradle -----------------------------------------------------------------
+# Gradle defaults its home to ~/.gradle (caches, daemon, jdks, wrapper dists —
+# it grows to tens of GB). GRADLE_USER_HOME is the supported override. The
+# existing home was moved here, so nothing re-downloads and gradle.properties
+# (which holds the Android upload-signing config) came with it.
+# Docs: docs.gradle.org/current/userguide/directory_layout.html
+export GRADLE_USER_HOME="$XDG_DATA_HOME/gradle"
+# ----------------------------------------------------------------------------
+
 # --- CocoaPods --------------------------------------------------------------
 # CocoaPods stores its specs repos, cache and templates in ~/.cocoapods by
 # default. CP_HOME_DIR relocates that whole tree (source: lib/cocoapods/
