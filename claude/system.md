@@ -117,6 +117,16 @@ caches whose relocation only took effect for interactive shells until `env.zsh`
 existed. Treat the table as *intended* state and `ls -A ~` as actual; when they
 disagree, one of them is a bug worth fixing rather than documenting.
 
+**Publishing credentials**: `~/.private-keys/` (dir `0700`, files `0600`) holds
+App Store Connect API keys (`AuthKey_*.p8`), the iOS distribution certificate
+and provisioning profile, and the Google Play service account
+(`play-publisher.json`). Together these can **publish to both stores**. Four
+scripts in `~/work/dolab-marcom/women/scripts/` reference this exact path, so it
+stays where it is rather than moving under `machine/`. It was found at `755`
+with `644` files on 2026-08-02 — `machine-check` now asserts the permissions.
+Also `~/.maestro/` is a real installed tool (on `PATH` from `.zshrc`), not a
+stray — but it is installed outside Homebrew, against §1.
+
 **Signing material**: `~/.local/share/machine/keystores/` (dir `0700`, files
 `0600`) holds Android release keystores — currently `kolhagty-upload.jks`,
 referenced by absolute path from `$GRADLE_USER_HOME/gradle.properties`. It is

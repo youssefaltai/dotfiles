@@ -90,7 +90,24 @@ fi
 # The backup warning must be RESOLVABLE. An unconditional nag means this script
 # can never report all-clear, and a weekly job that always fails is one you stop
 # reading — which costs more than the warning was worth.
-head_ "Signing keystores"
+head_ "Signing material"
+
+# ~/.private-keys holds App Store Connect API keys (.p8), the iOS distribution
+# certificate, a provisioning profile and the Google Play service account — i.e.
+# everything needed to publish either app. Four scripts in the kolhagty repo
+# reference this exact path, so it stays put; what matters is that it is not
+# world-readable. It was found at 755/644 on 2026-08-02.
+PK="$HOME/.private-keys"
+if [ -d "$PK" ]; then
+  bad=$(find "$PK" -type f ! -perm 600 2>/dev/null | wc -l | tr -d ' ')
+  dmode=$(stat -f '%Lp' "$PK")
+  if [ "$bad" != "0" ] || [ "$dmode" != "700" ]; then
+    note "publishing credentials in ~/.private-keys are too permissive (dir $dmode, $bad file(s) not 600)"
+  else
+    ok "publishing credentials locked down (dir 700, all files 600)"
+  fi
+fi
+
 KS="$HOME/.local/share/machine/keystores"
 MARKER="$KS/.backup-confirmed"
 if [ -d "$KS" ]; then

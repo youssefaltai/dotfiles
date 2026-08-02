@@ -48,6 +48,8 @@
       "Read(~/.config/gh-noon/**)",
       "Read(~/.config/gh-dolab/**)",
       "Read(~/.local/share/machine/**)",
+      "Read(~/.private-keys/**)",
+      "Read(**/*.p8)",
       "Read(**/.env)",
       "Read(**/.env.local)",
       "Read(**/.env.production)",
