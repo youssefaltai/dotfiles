@@ -7,9 +7,4 @@
 # to the account.
 [user]
 	email = 300489642+DoLab-marcom@users.noreply.github.com
-
-# No dedicated signing key on disk yet, so commits here are signed with the
-# personal key from the base config and will show as Unverified under
-# DoLab-marcom. GitHub refuses the same key on two accounts. Fix with:
-#   ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_dolab -C dolab-marcom
-#   GH_CONFIG_DIR=~/.config/gh-dolab gh ssh-key add ~/.ssh/id_ed25519_dolab.pub --type signing
+	signingkey = ~/.ssh/id_ed25519_dolab.pub
