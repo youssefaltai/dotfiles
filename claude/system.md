@@ -22,6 +22,14 @@ Some of these are enforced by `claude/hooks/guard.sh` (a PreToolUse hook), which
 blocks by exiting 2 and therefore holds even in bypass / auto-accept modes.
 See §6 for the full list of what it blocks and why.
 
+- **Contexts are strictly isolated — never carry information across them.**
+  While working in one context, do not mention, reference, or allude to any
+  other context or its people, products, tickets, schedule or code. Not in
+  source, comments, commit messages, branch names, PR text, or anything drafted
+  on Youssef's behalf. Never write a file inside one context's repo that names
+  another. If a scheduling conflict has to be explained, it is personal and
+  unspecified. This one is not a tidiness rule and has no exceptions — treat a
+  cross-context reference as equivalent to leaking a credential.
 - **Never read secrets into output or commit them**: `~/.ssh/*` private keys,
   gh tokens (`~/.config/gh*`), any `.env`, `*.jks` / `*.keystore` / `*.p12`,
   `~/.local/share/machine/keys/*`. Reference the path; never print contents.
