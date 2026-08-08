@@ -11,6 +11,9 @@
 !README.md
 !install.sh
 
+# day-to-day driving guide (README rebuilds the machine; this one runs it)
+!GUIDE.md
+
 # contexts.toml — the single definition of every context (employer/client/
 # personal). bin/ holds this machine's own scripts; `ctx` generates all the
 # per-context identity wiring from that spec. Both are load-bearing for
@@ -47,6 +50,9 @@ mise/.mise.toml
 # neovim Flutter layer, used only in ~/work/reckit (via NVIM_APPNAME)
 !nvim-flutter/
 !nvim-flutter/**
+# neovim web/React Native layer — noon, dolab-marcom, freelance (via NVIM_APPNAME)
+!nvim-webdev/
+!nvim-webdev/**
 
 # ghostty + starship
 !ghostty/
@@ -65,3 +71,7 @@ mise/.mise.toml
 # under ~/.local/share/atuin/, not here)
 !atuin/
 !atuin/**
+
+# macOS cruft. Last match wins, so this must stay at the end — the `!bin/**`
+# style re-includes above would otherwise pull .DS_Store back in.
+.DS_Store

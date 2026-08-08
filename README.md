@@ -8,6 +8,9 @@ switching, delegation safety, and the maintenance routines — lives in
 [`claude/system.md`](claude/system.md), the single authoritative manual. This
 README covers only **reproducing the setup on a fresh Mac**.
 
+For **driving the machine day to day** — starting a day, switching contexts,
+the slash commands, tmux, ending a day — see [`GUIDE.md`](GUIDE.md).
+
 Claude Code is the only AI agent on this machine (since 2026-08-02).
 
 ---
