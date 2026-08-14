@@ -9,10 +9,15 @@ lives in the dotfiles repo (`~/.config`, a private git repo). `README.md` in
 that repo covers only *reproducing the setup on a fresh Mac*; everything about
 how the machine is *operated* lives here.
 
-**Claude Code is the only AI agent on this machine.** OpenCode, aider, codex,
-gemini-cli, copilot-cli, Cursor and the Claude/ChatGPT desktop apps were all
+**Claude Code is the only AI agent CLI on this machine.** OpenCode, aider,
+codex, gemini-cli, copilot-cli and the Claude/ChatGPT desktop apps were all
 removed on 2026-08-02. If you find a reference to any of them in a config, doc,
 or comment, it is stale — delete it.
+
+**Exception — Cursor** (`cask "cursor"`, `/Applications/Cursor.app`):
+reinstalled 2026-08-04, deliberately, because reckit work needs it. It is not a
+stray and must not be removed on sight. This line was added 2026-08-14 after the
+blanket claim above was found to contradict the installed state.
 
 ---
 

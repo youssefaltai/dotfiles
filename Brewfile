@@ -85,6 +85,8 @@ brew "hostinger/tap/hostinger", trusted: true
 brew "resend/cli/resend", trusted: true
 # Command-line tools for building and debugging Android apps
 cask "android-commandlinetools"
+# Write, edit, and chat about your code with AI
+cask "cursor"
 # Voice and text chat software
 cask "discord"
 # Collaborative team software
@@ -110,6 +112,11 @@ cask "tailscale-app"
 cask "temurin"
 # JDK from the Eclipse Foundation (Adoptium)
 cask "temurin@21"
+vscode "anthropic.claude-code"
+vscode "anysphere.remote-containers"
+vscode "anysphere.remote-ssh"
+vscode "dart-code.dart-code"
+vscode "dart-code.flutter"
 npm "pnpm"
 npm "typescript-language-server"
 npm "typescript"
